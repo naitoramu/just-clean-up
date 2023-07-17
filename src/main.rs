@@ -1,3 +1,5 @@
+mod entities;
+
 use futures::executor::block_on;
 use sea_orm::{ConnectionTrait, Database, DbBackend, DbErr, Statement};
 
