@@ -1,37 +1,13 @@
 use std::env;
 use std::path::{Path, PathBuf};
-use sqlx::{MySql, MySqlPool, Pool};
-use sqlx::migrate::{MigrateDatabase, MigrateError, Migrator};
+use sqlx::{MySql,Pool};
+use sqlx::migrate::{MigrateError, Migrator};
 
 pub struct Migrations {}
 
 impl Migrations {
 
-    pub async fn migrate() {
-        let database_url: String = Self::get_db_url();
-        Self::create_database_if_not_exists(database_url.as_str()).await;
-
-        let db: Pool<MySql> = MySqlPool::connect(database_url.as_str()).await.unwrap();
-        Self::run_migrations(&db).await;
-    }
-
-    fn get_db_url() -> String {
-        env::var("DATABASE_URL").expect("$DATABASE_URL is not set!")
-    }
-
-    async fn create_database_if_not_exists(database_url: &str) {
-        if !MySql::database_exists(database_url).await.unwrap_or(false) {
-            println!("Creating database {}", database_url);
-            match MySql::create_database(database_url).await {
-                Ok(_) => println!("Database created successfully"),
-                Err(error) => panic!("error: {}", error),
-            }
-        } else {
-            println!("Database already exists");
-        }
-    }
-
-    async fn run_migrations(db: &Pool<MySql>) {
+    pub async fn run_migrations(db: &Pool<MySql>) {
         let crate_dir: String = env::var("CARGO_MANIFEST_DIR").unwrap();
         let migrations: PathBuf = Path::new(&crate_dir).join("./migrations");
         let migration_results: Result<(), MigrateError> = Migrator::new(migrations)

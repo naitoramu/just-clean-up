@@ -1,17 +1,14 @@
-use axum::{
-    routing::get,
-    Json, Router,
-};
+use axum::Router;
 use std::{net::SocketAddr};
+use crate::routes::user;
 
 pub struct Server {}
 
 impl Server {
-
     pub async fn run() {
-        let app = Router::new().route(
-            "/", get(handler)
-        );
+        let app = Router::new()
+            .nest("/v1", Router::new()
+                .merge(user::routes()));
 
         let addr = SocketAddr::from(([127, 0, 0, 1], 3030));
         println!("Server started, listening on {addr}");
@@ -20,14 +17,4 @@ impl Server {
             .await
             .expect("Failed to start server");
     }
-}
-#[derive(serde::Serialize)]
-struct Message {
-    message: String,
-}
-
-async fn handler() -> Json<Message> {
-    Json(Message {
-        message: String::from("Hello, World!"),
-    })
 }
