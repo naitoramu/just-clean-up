@@ -5,29 +5,18 @@ use crate::entities::User;
 use crate::repositories::Repository;
 use crate::repositories::user::UserRepository;
 
-struct UserController<'a> {
-    repository: UserRepository<'a>,
+pub fn routes() -> Router {
+    Router::new()
+        .route("/users", get(get_users))
+    // .route("/users", post(create_user))
+    // .route("/users/:id", get(get_user))
+    // .route("/users/:id", put(update_user))
+    // .route("/users/:id", delete(delete_user))
 }
 
-impl<'a> UserController<'a> {
-
-    pub fn new(db: &MySqlPool) -> Self {
-        Self { repository: UserRepository::new(db) }
-    }
-
-    pub fn routes(&self, db: &MySqlPool) -> Router {
-        Router::new()
-            .route("/users", get(self.get_users))
-        // .route("/users", post(create_user))
-        // .route("/users/:id", get(get_user))
-        // .route("/users/:id", put(update_user))
-        // .route("/users/:id", delete(delete_user))
-    }
-
-    fn get_users(&self) -> Json<Vec<User>>{
-        Json(
-            self.repository.get_all()
-        )
-    }
+async fn get_users() -> Json<Vec<User>> {
+    Json(
+        UserRepository::get_all().await
+    )
 }
 

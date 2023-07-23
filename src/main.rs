@@ -8,16 +8,16 @@ mod database;
 use dotenv::dotenv;
 use sqlx::{MySql, Pool};
 use migrations::Migrations;
-use crate::database::Database;
+use crate::database::{CONNECTION, Database};
 use crate::server::Server;
 
 #[tokio::main]
 async fn main() {
     load_dot_env();
-    let db: Pool<MySql> = Database::new()
+    Database::new()
         .create_db_if_not_exists().await
-        .get_connection().await;
-    Migrations::run_migrations(&db).await;
+        .establish_connection().await;
+    Migrations::run_migrations(CONNECTION.get().unwrap()).await;
     Server::run().await;
 }
 
