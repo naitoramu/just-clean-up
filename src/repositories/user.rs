@@ -1,40 +1,32 @@
 use async_trait::async_trait;
-use sqlx::MySqlPool;
+use crate::database::{CONNECTION, Database};
 use crate::entities::User;
 use crate::repositories::Repository;
 
-pub struct UserRepository<'a> {
-    db: &'a MySqlPool,
-}
-
-impl<'a> UserRepository<'a> {
-    pub fn new(db: &'a MySqlPool) -> Self {
-        Self { db }
-    }
-}
+pub struct UserRepository {}
 
 #[async_trait]
-impl<'a> Repository<User> for UserRepository<'a> {
-    async fn get_all(&self) -> Vec<User> {
+impl Repository<User> for UserRepository {
+    async fn get_all() -> Vec<User> {
     sqlx::query_as::<_, User>("SELECT id, username, email, password, wallet FROM user")
-        .fetch_all(self.db)
+        .fetch_all(Database::get_connection())
         .await
         .unwrap().to_owned()
     }
 
-    fn get_by_id(id: u64) -> User {
-        todo!()
-    }
-
-    fn create(entity: User) {
-        todo!()
-    }
-
-    fn update(entity: User) {
-        todo!()
-    }
-
-    fn delete(entity: User) {
-        todo!()
-    }
+    // fn get_by_id(id: u64) -> User {
+    //     todo!()
+    // }
+    //
+    // fn create(entity: User) {
+    //     todo!()
+    // }
+    //
+    // fn update(entity: User) {
+    //     todo!()
+    // }
+    //
+    // fn delete(entity: User) {
+    //     todo!()
+    // }
 }

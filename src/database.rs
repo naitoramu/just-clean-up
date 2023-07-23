@@ -1,14 +1,19 @@
 use std::env;
+use lazy_static::lazy_static;
 use sqlx::{MySql, MySqlPool, Pool};
 use sqlx::migrate::MigrateDatabase;
+use tokio::sync::OnceCell;
+
+lazy_static! {
+    pub static ref CONNECTION: OnceCell<MySqlPool> = OnceCell::new();
+}
 
 pub struct Database {
     database_url: String,
 }
 
 impl Database {
-
-    pub fn new() -> Self{
+    pub fn new() -> Self {
         Self { database_url: get_db_url() }
     }
 
@@ -25,8 +30,15 @@ impl Database {
         self
     }
 
-    pub async fn get_connection(&self) -> Pool<MySql> {
-        MySqlPool::connect(self.database_url.as_str()).await.unwrap()
+    pub async fn establish_connection(&self) {
+        let pool = MySqlPool::connect(self.database_url.as_str())
+            .await
+            .expect("Cannot establish db connection");
+        CONNECTION.set(pool).unwrap();
+    }
+
+    pub fn get_connection() -> &'static MySqlPool {
+        CONNECTION.get().unwrap()
     }
 }
 

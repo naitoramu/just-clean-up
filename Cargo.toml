@@ -13,3 +13,4 @@ tokio = { version = "1.29.1", features = ["full"] }
 serde = { version = "1.0.173", features = ["derive"] }
 sqlx = { version = "0.7.1", features = [ "mysql", "macros", "runtime-async-std", "tls-rustls", "time" ] }
 dotenv = "0.15.0"
+lazy_static = "1.4.0"
