@@ -1,4 +1,5 @@
 mod entities;
+mod repositories;
 mod migrations;
 mod server;
 mod routes;
