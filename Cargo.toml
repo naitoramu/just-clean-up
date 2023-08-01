@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 futures = "0.3.28"
 axum = "0.6.19"
-#async-std = { version = "1.9.0", features = ["attributes"] }
+async-trait = "0.1.71"
 tokio = { version = "1.29.1", features = ["full"] }
 serde = { version = "1.0.173", features = ["derive"] }
+serde_valid = "0.16.2"
 sqlx = { version = "0.7.1", features = [ "mysql", "macros", "runtime-async-std", "tls-rustls", "time" ] }
 dotenv = "0.15.0"
+lazy_static = "1.4.0"

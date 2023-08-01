@@ -33,10 +33,6 @@ impl Migrations {
 //         .await
 //         .unwrap();
 //     println!("Query result: {:?}", result);
-//     let user_results = sqlx::query_as::<_, User>("SELECT id, username, email, password, wallet FROM user")
-//         .fetch_all(db)
-//         .await
-//         .unwrap();
 //     for user in user_results {
 //         println!("[{}] name: {}, email: {}, password: {}, wallet: {}",
 //                  user.id, user.username, user.email, user.password, user.wallet);
