@@ -1,12 +1,12 @@
 mod entities;
 mod repositories;
 mod migrations;
+mod error;
 mod server;
-mod routes;
+mod controllers;
 mod database;
 
 use dotenv::dotenv;
-use sqlx::{MySql, Pool};
 use migrations::Migrations;
 use crate::database::{CONNECTION, Database};
 use crate::server::Server;
