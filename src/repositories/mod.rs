@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use sqlx::{FromRow, Row};
 use crate::error::CustomError;
 
-pub mod user;
+pub mod user_repository;
 
 #[async_trait]
 pub trait Repository<T> {
