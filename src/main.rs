@@ -3,7 +3,7 @@ mod repositories;
 mod migrations;
 mod error;
 mod server;
-mod routes;
+mod controllers;
 mod database;
 
 use dotenv::dotenv;

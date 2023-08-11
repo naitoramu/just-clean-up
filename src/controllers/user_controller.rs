@@ -5,7 +5,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post, put};
 use crate::entities::User;
 use crate::repositories::Repository;
-use crate::repositories::user::UserRepository;
+use crate::repositories::user_repository::UserRepository;
 
 pub fn routes() -> Router {
     Router::new()

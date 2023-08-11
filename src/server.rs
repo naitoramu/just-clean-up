@@ -1,6 +1,6 @@
 use axum::Router;
 use std::{net::SocketAddr};
-use crate::routes::user;
+use crate::controllers::user_controller;
 
 pub struct Server {}
 
@@ -8,7 +8,7 @@ impl Server {
     pub async fn run() {
         let app = Router::new()
             .nest("/v1", Router::new()
-                .merge(user::routes()));
+                .merge(user_controller::routes()));
 
         let addr = SocketAddr::from(([127, 0, 0, 1], 3030));
         println!("Server started, listening on {addr}");
