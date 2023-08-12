@@ -4,6 +4,7 @@ use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
 use sqlx::{FromRow};
+use crate::entities::Entity;
 
 #[derive(Validate, Deserialize, Serialize, Clone, FromRow, Debug)]
 pub struct User {
@@ -16,7 +17,7 @@ pub struct User {
 
     pub password: String,
 
-    pub wallet: f32
+    pub wallet: f32,
 }
 
 impl User {
@@ -30,3 +31,5 @@ impl IntoResponse for User {
         Json(self).into_response()
     }
 }
+
+impl Entity for User {}

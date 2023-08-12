@@ -1,6 +1,6 @@
 use std::env;
 use lazy_static::lazy_static;
-use sqlx::{MySql, MySqlPool, Pool};
+use sqlx::{MySql, MySqlPool};
 use sqlx::migrate::MigrateDatabase;
 use tokio::sync::OnceCell;
 

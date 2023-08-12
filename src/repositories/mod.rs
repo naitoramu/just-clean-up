@@ -1,23 +1,22 @@
 use async_trait::async_trait;
-use sqlx::{FromRow, Row};
-use crate::error::CustomError;
+use crate::error::http_error::HttpError;
 
 pub mod user_repository;
 
 #[async_trait]
 pub trait Repository<T> {
     const SELECT_ALL_QUERY: &'static str;
-    async fn get_all() -> Result<Vec<T>, CustomError>;
+    async fn get_all() -> Result<Vec<T>, HttpError>;
 
     const SELECT_BY_ID_QUERY: &'static str;
-    async fn get_by_id(id: u64) -> Result<T, CustomError>;
+    async fn get_by_id(id: u64) -> Result<T, HttpError>;
 
     const INSERT_QUERY: &'static str;
-    async fn create(entity: &T) -> Result<T, CustomError>;
+    async fn create(entity: &T) -> Result<T, HttpError>;
 
     const UPDATE_QUERY: &'static str;
-    async fn update(id: u64, entity: &T) -> Result<T, CustomError>;
+    async fn update(id: u64, entity: &T) -> Result<T, HttpError>;
 
     const DELETE_QUERY: &'static str;
-    async fn delete(id: u64) -> Result<(), CustomError>;
+    async fn delete(id: u64) -> Result<(), HttpError>;
 }
