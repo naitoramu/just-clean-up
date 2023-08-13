@@ -17,21 +17,21 @@ pub fn routes() -> Router {
 }
 
 async fn get_users() -> Response {
-     match UserRepository::get_all().await {
+    match UserRepository::get_all().await {
         Ok(users) => Json(users).into_response(),
         Err(err) => err.into_response()
     }
 }
 
 async fn get_user(Path(id): Path<u64>) -> Response {
-        UserRepository::get_by_id(id).await.into_response()
+    UserRepository::get_by_id(id).await.into_response()
 }
 
 async fn create_user(Json(body): Json<User>) -> Response {
-   match UserRepository::create(&body).await {
-       Ok(user) => user.into_response(StatusCode::CREATED),
-       Err(err) => err.into_response()
-   }
+    match UserRepository::create(&body).await {
+        Ok(user) => user.into_response(StatusCode::CREATED),
+        Err(err) => err.into_response()
+    }
 }
 
 async fn update_user(Path(id): Path<u64>, Json(body): Json<User>) -> Response {

@@ -1,9 +1,10 @@
+use std::collections::HashMap;
 use async_trait::async_trait;
-use axum::http::StatusCode;
 use sqlx::{query, query_as};
 use crate::database::{Database};
-use crate::entities::User;
-use crate::error::CustomError;
+use crate::entities::{Entity, User};
+use crate::error::http_error::HttpError;
+use crate::error::http_error_kind::HttpErrorKind;
 use crate::repositories::Repository;
 
 pub struct UserRepository {}
@@ -13,15 +14,16 @@ impl Repository<User> for UserRepository {
     const SELECT_ALL_QUERY: &'static str = "\
         SELECT id, username, email, password, wallet \
         FROM user";
-    async fn get_all() -> Result<Vec<User>, CustomError> {
+    async fn get_all() -> Result<Vec<User>, HttpError> {
         match query_as::<_, User>(Self::SELECT_ALL_QUERY)
             .fetch_all(Database::get_connection())
             .await {
             Ok(users) => Ok(users),
-            Err(err) => Err(CustomError::new(
-                StatusCode::NOT_FOUND,
-                "Cannot fetch users".to_string(),
-                err.to_string())
+            Err(err) => Err(
+                HttpError::from_type(HttpErrorKind::CannotFetchResources(err))
+                    .with_properties(HashMap::from([
+                        ("resource", User::get_struct_name()),
+                    ]))
             )
         }
     }
@@ -30,23 +32,26 @@ impl Repository<User> for UserRepository {
         SELECT id, username, email, password, wallet \
         FROM user \
         WHERE id = (?)";
-    async fn get_by_id(id: u64) -> Result<User, CustomError> {
+    async fn get_by_id(id: u64) -> Result<User, HttpError> {
         match query_as::<_, User>(Self::SELECT_BY_ID_QUERY)
             .bind(id)
             .fetch_one(Database::get_connection())
             .await {
             Ok(user) => Ok(user),
-            Err(err) => Err(CustomError::new(
-                StatusCode::NOT_FOUND,
-                "User with given ID does not exists".to_string(),
-                err.to_string()))
+            Err(err) => Err(
+                HttpError::from_type(HttpErrorKind::ResourceNotFound(err))
+                    .with_properties(HashMap::from([
+                        ("resource", User::get_struct_name()),
+                        ("resource_id", id.to_string())
+                    ]))
+            )
         }
     }
 
     const INSERT_QUERY: &'static str = "\
         INSERT INTO user (username, email, password, wallet) \
         VALUES (?, ?, ?, ?)";
-    async fn create(entity: &User) -> Result<User, CustomError> {
+    async fn create(entity: &User) -> Result<User, HttpError> {
         let insert_result = query(Self::INSERT_QUERY)
             .bind(entity.username.as_str())
             .bind(entity.email.as_str())
@@ -57,11 +62,12 @@ impl Repository<User> for UserRepository {
 
         match insert_result {
             Ok(result) => Self::get_by_id(result.last_insert_id()).await,
-            Err(err) => Err(CustomError::new(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                "Cannot create user entity".to_string(),
-                err.to_string()
-            ))
+            Err(err) => Err(
+                HttpError::from_type(HttpErrorKind::CannotCreateResource(err))
+                    .with_properties(HashMap::from([
+                        ("resource", User::get_struct_name())
+                    ]))
+            )
         }
     }
 
@@ -69,7 +75,7 @@ impl Repository<User> for UserRepository {
         UPDATE user \
         SET username = ?, email = ?, password = ?, wallet = ? \
         WHERE id = ?";
-    async fn update(id: u64, entity: &User) -> Result<User, CustomError> {
+    async fn update(id: u64, entity: &User) -> Result<User, HttpError> {
         match query(Self::UPDATE_QUERY)
             .bind(entity.username.as_str())
             .bind(entity.email.as_str())
@@ -78,28 +84,34 @@ impl Repository<User> for UserRepository {
             .bind(id)
             .execute(Database::get_connection()).await {
             Ok(_) => Self::get_by_id(id).await,
-            Err(err) => Err(CustomError::new(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                "Cannot update desired user entity".to_string(),
-                err.to_string()
-            ))
+            Err(err) => Err(
+                HttpError::from_type(HttpErrorKind::CannotUpdateResource(err))
+                    .with_properties(HashMap::from([
+                        ("resource", User::get_struct_name()),
+                        ("resource_id", id.to_string())
+                    ]))
+            )
         }
     }
 
     const DELETE_QUERY: &'static str = "\
         DELETE FROM user \
         WHERE id = ?";
-    async fn delete(id: u64) -> Result<(), CustomError> {
+    async fn delete(id: u64) -> Result<(), HttpError> {
+        Self::get_by_id(id).await?;
+
         match query(Self::DELETE_QUERY)
             .bind(id)
             .execute(Database::get_connection())
             .await {
             Ok(_) => Ok(()),
-            Err(err) => Err(CustomError::new(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Cannot delete user entity with given ID".to_string(),
-                err.to_string()
-            ))
+            Err(err) => Err(
+                HttpError::from_type(HttpErrorKind::CannotDeleteResource(err))
+                    .with_properties(HashMap::from([
+                        ("resource", User::get_struct_name()),
+                        ("resource_id", id.to_string())
+                    ]))
+            )
         }
     }
 }
