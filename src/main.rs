@@ -6,6 +6,7 @@ mod server;
 mod controllers;
 mod database;
 
+use std::env;
 use dotenv::dotenv;
 use migrations::Migrations;
 use crate::database::{CONNECTION, Database};
@@ -23,4 +24,10 @@ async fn main() {
 
 fn load_dot_env() {
     dotenv().ok();
+}
+
+pub fn development_mode() -> bool {
+    env::var("DEVELOPMENT_MODE")
+        .unwrap_or("false".to_string())
+        .eq_ignore_ascii_case("true")
 }
