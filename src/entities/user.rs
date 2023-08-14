@@ -1,10 +1,9 @@
-use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
 use sqlx::{FromRow};
-use crate::entities::Entity;
+use crate::entities::{DeserializationErrorMapper, Entity};
 
 #[derive(Validate, Deserialize, Serialize, Clone, FromRow, Debug)]
 pub struct User {
@@ -17,13 +16,8 @@ pub struct User {
 
     pub password: String,
 
+    #[serde(skip_deserializing)]
     pub wallet: f32,
-}
-
-impl User {
-    pub fn into_response(self, status_code: StatusCode) -> Response {
-        (status_code, Json(self)).into_response()
-    }
 }
 
 impl IntoResponse for User {
@@ -33,3 +27,5 @@ impl IntoResponse for User {
 }
 
 impl Entity for User {}
+
+impl DeserializationErrorMapper for User {}

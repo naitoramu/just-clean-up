@@ -22,19 +22,3 @@ impl Migrations {
     }
 
 }
-
-// async fn test(db: &Pool<MySql>) {
-//     let result = sqlx::query("INSERT IGNORE INTO user (username, email, password, wallet) VALUES (?, ?, ?, ?)")
-//         .bind("bobby")
-//         .bind("bobby@tidyup.please")
-//         .bind("aB3f9Rt2K7xPqYlO6DcX5ZvFn0sJ8jI1gHuVbW4mNzEpQyLaSrCkTiGhMwUo")
-//         .bind(42.0)
-//         .execute(db)
-//         .await
-//         .unwrap();
-//     println!("Query result: {:?}", result);
-//     for user in user_results {
-//         println!("[{}] name: {}, email: {}, password: {}, wallet: {}",
-//                  user.id, user.username, user.email, user.password, user.wallet);
-//     }
-// }

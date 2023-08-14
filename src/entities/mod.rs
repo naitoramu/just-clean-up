@@ -1,5 +1,9 @@
 mod user;
 
+use serde::Deserialize;
+use crate::error::field_error::FieldError;
+use crate::error::http_error::HttpError;
+use crate::error::http_error_kind::HttpErrorKind::DeserializationError;
 pub use self::user::User;
 
 pub trait Entity {
@@ -10,5 +14,17 @@ pub trait Entity {
             .next()
             .unwrap_or(full_struct_name)
             .to_string()
+    }
+}
+
+pub trait DeserializationErrorMapper: for<'de> Deserialize<'de> {
+    fn deserialize_and_map_error(body: &str) -> Result<Self, HttpError>
+        where
+            Self: Sized,
+    {
+        serde_json::from_str::<Self>(body).map_err(|err| {
+            let field_error = vec!(FieldError::from_deserialization_error(&err));
+            HttpError::from_type(DeserializationError(err)).with_field_errors(field_error)
+        })
     }
 }

@@ -1,9 +1,11 @@
 use std::collections::HashMap;
+use std::error::Error;
 use axum::{http::StatusCode, Json, response::{IntoResponse, Response}};
 use std::fmt;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use crate::development_mode;
+use crate::error::field_error::FieldError;
 use crate::error::http_error_kind::HttpErrorKind;
 
 #[derive(Debug)]
@@ -11,12 +13,13 @@ pub struct HttpError {
     status: StatusCode,
     title: String,
     detail: String,
+    errors: Option<Vec<FieldError>>,
     internal_error: String,
 }
 
 impl HttpError {
-    pub fn new(status: StatusCode, title: String, detail: String, internal_error: String) -> Self {
-        Self { status, title, detail, internal_error }
+    pub fn new(status: StatusCode, title: String, detail: String, errors: Option<Vec<FieldError>>, internal_error: String) -> Self {
+        Self { status, title, detail, errors, internal_error }
     }
 
     pub fn from_type(error_type: HttpErrorKind) -> HttpError {
@@ -24,19 +27,22 @@ impl HttpError {
             error_type.get_status_code(),
             error_type.get_title(),
             error_type.get_detail(),
-            error_type.get_internal_error().to_string(),
+            None,
+            error_type.get_internal_error(),
         )
     }
 
-    pub fn with_properties(&self, properties: HashMap<&str, String>) -> Self {
-        let mut title = self.title.clone();
-        let mut detail = self.detail.clone();
-        for (key, value) in &properties {
-            title = title.replace(format!("${{{}}}", key).as_str(), value);
-            detail = detail.replace(format!("${{{}}}", key).as_str(), value);
-        }
+    pub fn with_field_errors(mut self, errors: Vec<FieldError>) -> Self {
+        self.errors = Some(errors);
+        self
+    }
 
-        HttpError::new(self.status, title, detail, self.internal_error.clone())
+    pub fn with_properties(mut self, properties: HashMap<&str, String>) -> Self {
+        for (key, value) in &properties {
+            self.title = self.title.replace(format!("${{{}}}", key).as_str(), value);
+            self.detail = self.detail.replace(format!("${{{}}}", key).as_str(), value);
+        }
+        self
     }
 }
 
@@ -46,6 +52,10 @@ impl Serialize for HttpError {
         state.serialize_field("status", &self.status.as_u16())?;
         state.serialize_field("title", &self.title)?;
         state.serialize_field("detail", &self.detail)?;
+        match &self.errors {
+            None => {}
+            Some(errors) => { state.serialize_field("errors", &errors)?; }
+        }
         if development_mode() {
             state.serialize_field("internal_error", &self.internal_error)?;
         }
@@ -59,9 +69,10 @@ impl fmt::Display for HttpError {
     }
 }
 
-// So that errors get printed to the browser?
 impl IntoResponse for HttpError {
     fn into_response(self) -> Response {
         (self.status, Json(self)).into_response()
     }
 }
+
+impl Error for HttpError {}

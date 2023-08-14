@@ -4,6 +4,7 @@ use toml::{from_str, Value};
 
 pub mod http_error;
 pub mod http_error_kind;
+pub mod field_error;
 
 lazy_static! {
     pub static ref ERROR_DETAILS: Value = load_http_errors_toml();

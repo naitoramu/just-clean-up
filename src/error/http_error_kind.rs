@@ -1,47 +1,34 @@
-use std::fmt;
+use std::error::Error;
+use std::fmt::Display;
 use axum::http::StatusCode;
 use convert_case::{Case, Casing};
-use lazy_static::lazy_static;
-use regex::Regex;
-use sqlx::Error;
+use sqlx::Error as SqlxError;
 use toml::Value;
+use serde_json::error::Error as SerdeJsonError;
 use crate::error::ERROR_DETAILS;
 
-lazy_static! {
-    pub static ref PARENTHESES_PATTERN: Regex =
-    Regex::new(r"\s*\(.*\)\s*").expect("Failed to compile PARENTHESES_REGEX");
-}
-
-#[derive(Debug)]
 pub enum HttpErrorKind {
-    ResourceNotFound(Error),
-    CannotFetchResources(Error),
-    CannotCreateResource(Error),
-    CannotUpdateResource(Error),
-    CannotDeleteResource(Error),
+    ResourceNotFound(SqlxError),
+    DeserializationError(SerdeJsonError),
+    InternalServerError(Box<dyn Error>),
 }
 
 impl HttpErrorKind {
-    pub fn to_kebab_case(&self) -> String {
-        PARENTHESES_PATTERN
-            .replace(self.to_string().as_str(), "")
-            .to_case(Case::Kebab)
+    fn get_error_key(&self) -> String {
+        self.to_string().to_case(Case::Kebab)
     }
 
     pub fn get_status_code(&self) -> StatusCode {
         match self {
+            HttpErrorKind::DeserializationError(_) => StatusCode::BAD_REQUEST,
             HttpErrorKind::ResourceNotFound(_) => StatusCode::NOT_FOUND,
-
-            HttpErrorKind::CannotFetchResources(_) |
-            HttpErrorKind::CannotDeleteResource(_) |
-            HttpErrorKind::CannotCreateResource(_) |
-            HttpErrorKind::CannotUpdateResource(_) => StatusCode::INTERNAL_SERVER_ERROR
+            _ => StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 
     pub fn get_title(&self) -> String {
-        println!("{}", self.to_kebab_case());
-        ERROR_DETAILS.get(self.to_kebab_case())
+        println!("{}", self.get_error_key());
+        ERROR_DETAILS.get(self.get_error_key())
             .and_then(|err| err.get("title"))
             .and_then(Value::as_str)
             .unwrap_or("Unknown Error")
@@ -49,26 +36,29 @@ impl HttpErrorKind {
     }
 
     pub fn get_detail(&self) -> String {
-        ERROR_DETAILS.get(self.to_kebab_case())
+        ERROR_DETAILS.get(self.get_error_key())
             .and_then(|err| err.get("detail"))
             .and_then(Value::as_str)
             .unwrap_or("Unknown Error Detail")
             .to_string()
     }
 
-    pub fn get_internal_error(&self) -> &Error {
+    pub fn get_internal_error(&self) -> String {
         match self {
-            HttpErrorKind::ResourceNotFound(error) |
-            HttpErrorKind::CannotFetchResources(error) |
-            HttpErrorKind::CannotCreateResource(error) |
-            HttpErrorKind::CannotDeleteResource(error) |
-            HttpErrorKind::CannotUpdateResource(error) => error,
+            HttpErrorKind::ResourceNotFound(error) => error.to_string(),
+            HttpErrorKind::DeserializationError(error) => error.to_string(),
+            HttpErrorKind::InternalServerError(error) => error.to_string()
         }
     }
 }
 
-impl fmt::Display for HttpErrorKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+impl Display for HttpErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let variant_name = match self {
+            HttpErrorKind::ResourceNotFound(_) => "Resource not found",
+            HttpErrorKind::DeserializationError(_) => "Deserialization error",
+            HttpErrorKind::InternalServerError(_) => "Internal server error",
+        };
+        write!(f, "{}", variant_name)
     }
 }

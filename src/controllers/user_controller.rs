@@ -1,10 +1,10 @@
 use axum::{Json, Router};
 use axum::extract::{Path};
 use axum::http::{StatusCode};
-use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post, put};
-use crate::entities::User;
-use crate::repositories::Repository;
+use crate::entities::{DeserializationErrorMapper, User};
+use crate::error::http_error::HttpError;
+use crate::repositories::CrudRepository;
 use crate::repositories::user_repository::UserRepository;
 
 pub fn routes() -> Router {
@@ -16,31 +16,33 @@ pub fn routes() -> Router {
         .route("/users/:id", delete(delete_user))
 }
 
-async fn get_users() -> Response {
+async fn get_users() -> Result<Json<Vec<User>>, HttpError> {
     match UserRepository::get_all().await {
-        Ok(users) => Json(users).into_response(),
-        Err(err) => err.into_response()
+        Ok(users) => Ok(Json(users)),
+        Err(err) => Err(err)
     }
 }
 
-async fn get_user(Path(id): Path<u64>) -> Response {
-    UserRepository::get_by_id(id).await.into_response()
+async fn get_user(Path(id): Path<u64>) -> Result<User, HttpError> {
+    UserRepository::get_by_id(id).await
 }
 
-async fn create_user(Json(body): Json<User>) -> Response {
-    match UserRepository::create(&body).await {
-        Ok(user) => user.into_response(StatusCode::CREATED),
-        Err(err) => err.into_response()
+async fn create_user(body: String) -> Result<(StatusCode, User), HttpError> {
+    let user: User = User::deserialize_and_map_error(&body)?;
+
+    match UserRepository::create(&user).await {
+        Ok(user) => Ok((StatusCode::CREATED, user)),
+        Err(err) => Err(err)
     }
 }
 
-async fn update_user(Path(id): Path<u64>, Json(body): Json<User>) -> Response {
-    UserRepository::update(id, &body).await.into_response()
+async fn update_user(Path(id): Path<u64>, Json(body): Json<User>) -> Result<User, HttpError> {
+    UserRepository::update(id, &body).await
 }
 
-async fn delete_user(Path(id): Path<u64>) -> Response {
+async fn delete_user(Path(id): Path<u64>) -> Result<StatusCode, HttpError> {
     match UserRepository::delete(id).await {
-        Ok(_) => (StatusCode::NO_CONTENT).into_response(),
-        Err(err) => err.into_response()
+        Ok(_) => Ok(StatusCode::NO_CONTENT),
+        Err(err) => Err(err)
     }
 }

@@ -2,18 +2,10 @@
 title = "${resource} not found"
 detail = "Cannot find ${resource} with id ${resource_id}"
 
-[cannot-fetch-resources]
-title = "Cannot fetch ${resource}s"
-detail = "The server encountered an error while trying to fetch ${resource}s. Please try again in a while."
+[internal-server-error]
+title = "Internal Server Error"
+detail = "The server encountered an unknown error. Please try again in a while."
 
-[cannot-create-resource]
-title = "Cannot create ${resource}"
-detail = "The server encountered an error while trying to create a ${resource}. Please try again in a while."
-
-[cannot-update-resource]
-title = "Cannot create ${resource}"
-detail = "The server encountered an error while trying to update a ${resource} with id ${resource_id}. Please try again in a while."
-
-[cannot-delete-resource]
-title = "Cannot delete ${resource}"
-detail = "The server encountered an error while trying to delete a ${resource} with id ${resource_id}. Please try again in a while."
+[deserialization-error]
+title = "Bad request body"
+detail = "Request body you submitted is invalid. See errors below and correct request body."

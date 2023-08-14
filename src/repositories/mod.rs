@@ -4,7 +4,7 @@ use crate::error::http_error::HttpError;
 pub mod user_repository;
 
 #[async_trait]
-pub trait Repository<T> {
+pub trait CrudRepository<T> {
     const SELECT_ALL_QUERY: &'static str;
     async fn get_all() -> Result<Vec<T>, HttpError>;
 

@@ -5,12 +5,12 @@ use crate::database::{Database};
 use crate::entities::{Entity, User};
 use crate::error::http_error::HttpError;
 use crate::error::http_error_kind::HttpErrorKind;
-use crate::repositories::Repository;
+use crate::repositories::CrudRepository;
 
 pub struct UserRepository {}
 
 #[async_trait]
-impl Repository<User> for UserRepository {
+impl CrudRepository<User> for UserRepository {
     const SELECT_ALL_QUERY: &'static str = "\
         SELECT id, username, email, password, wallet \
         FROM user";
@@ -19,12 +19,9 @@ impl Repository<User> for UserRepository {
             .fetch_all(Database::get_connection())
             .await {
             Ok(users) => Ok(users),
-            Err(err) => Err(
-                HttpError::from_type(HttpErrorKind::CannotFetchResources(err))
-                    .with_properties(HashMap::from([
-                        ("resource", User::get_struct_name()),
-                    ]))
-            )
+            Err(err) => Err(HttpError::from_type(
+                HttpErrorKind::InternalServerError(Box::try_from(err).unwrap())
+            ))
         }
     }
 
@@ -62,12 +59,9 @@ impl Repository<User> for UserRepository {
 
         match insert_result {
             Ok(result) => Self::get_by_id(result.last_insert_id()).await,
-            Err(err) => Err(
-                HttpError::from_type(HttpErrorKind::CannotCreateResource(err))
-                    .with_properties(HashMap::from([
-                        ("resource", User::get_struct_name())
-                    ]))
-            )
+            Err(err) => Err(HttpError::from_type(
+                HttpErrorKind::InternalServerError(Box::try_from(err).unwrap())
+            ))
         }
     }
 
@@ -84,13 +78,10 @@ impl Repository<User> for UserRepository {
             .bind(id)
             .execute(Database::get_connection()).await {
             Ok(_) => Self::get_by_id(id).await,
-            Err(err) => Err(
-                HttpError::from_type(HttpErrorKind::CannotUpdateResource(err))
-                    .with_properties(HashMap::from([
-                        ("resource", User::get_struct_name()),
-                        ("resource_id", id.to_string())
-                    ]))
-            )
+            Err(err) => Err(HttpError::from_type(
+                HttpErrorKind::InternalServerError(Box::try_from(err).unwrap())
+            ))
+
         }
     }
 
@@ -105,13 +96,10 @@ impl Repository<User> for UserRepository {
             .execute(Database::get_connection())
             .await {
             Ok(_) => Ok(()),
-            Err(err) => Err(
-                HttpError::from_type(HttpErrorKind::CannotDeleteResource(err))
-                    .with_properties(HashMap::from([
-                        ("resource", User::get_struct_name()),
-                        ("resource_id", id.to_string())
-                    ]))
-            )
+            Err(err) => Err(HttpError::from_type(
+                HttpErrorKind::InternalServerError(Box::try_from(err).unwrap())
+            ))
+
         }
     }
 }

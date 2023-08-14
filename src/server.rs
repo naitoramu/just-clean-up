@@ -6,7 +6,7 @@ pub struct Server {}
 
 impl Server {
     pub async fn run() {
-        let app = Router::new()
+        let app: Router = Router::new()
             .nest("/v1", Router::new()
                 .merge(user_controller::routes()));
 
