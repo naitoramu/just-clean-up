@@ -29,6 +29,7 @@ async fn get_user(Path(id): Path<u64>) -> Result<User, HttpError> {
 
 async fn create_user(body: String) -> Result<(StatusCode, User), HttpError> {
     let user: User = User::deserialize_and_map_error(&body)?;
+    println!("{:?}", &user);
 
     match UserRepository::create(&user).await {
         Ok(user) => Ok((StatusCode::CREATED, user)),

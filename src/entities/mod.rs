@@ -1,5 +1,7 @@
 mod user;
 
+use crypto::digest::Digest;
+use crypto::sha2::Sha256;
 use serde::Deserialize;
 use crate::error::field_error::FieldError;
 use crate::error::http_error::HttpError;
@@ -26,5 +28,15 @@ pub trait DeserializationErrorMapper: for<'de> Deserialize<'de> {
             let field_error = vec!(FieldError::from_deserialization_error(&err));
             HttpError::from_type(DeserializationError(err)).with_field_errors(field_error)
         })
+    }
+}
+
+pub struct Hash {}
+
+impl Hash {
+    fn sha256(input_string: &str) -> String {
+        let mut sha: Sha256 = Sha256::new();
+        sha.input_str(input_string);
+        sha.result_str()
     }
 }
