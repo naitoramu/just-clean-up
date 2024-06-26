@@ -3,10 +3,9 @@ use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
-use sqlx::{FromRow};
 use crate::entities::Entity;
 
-#[derive(Validate, Deserialize, Serialize, Clone, FromRow, Debug)]
+#[derive(Validate, Deserialize, Serialize, Clone, Debug)]
 pub struct User {
     #[serde(skip_deserializing)]
     pub id: u64,
