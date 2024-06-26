@@ -1,3 +1,4 @@
+use crate::database::Database;
 use crate::server::Server;
 
 mod entities;
@@ -10,8 +11,6 @@ mod config;
 
 #[tokio::main]
 async fn main() {
-    // Database::new()
-    //     .create_db_if_not_exists().await
-    //     .establish_connection().await;
+    Database::new().establish_connection().await.expect("Cannot establish database connection");
     Server::run().await;
 }

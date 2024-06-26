@@ -11,9 +11,11 @@ lazy_static! {
 #[derive(Debug)]
 pub struct AppConfig {
     pub port: u16,
-    pub database_url: String,
     pub base_path: String,
     pub development_mode: bool,
+    pub db_url: String,
+    pub db_username: String,
+    pub db_password: String,
 }
 
 impl AppConfig {
@@ -28,11 +30,13 @@ impl AppConfig {
 
     fn new() -> Self {
         dotenv().ok();
-        AppConfig {
+        Self {
             port: EnvVariable::new("PORT").as_u16(),
-            database_url: EnvVariable::new("DATABASE_URL").as_string(),
             base_path: EnvVariable::new("BASE_PATH").as_string(),
-            development_mode: EnvVariable::new("DEV_MODE").as_bool()
+            development_mode: EnvVariable::new("DEV_MODE").as_bool(),
+            db_url: EnvVariable::new("DATABASE_URL").as_string(),
+            db_username: EnvVariable::new("DATABASE_USERNAME").as_string(),
+            db_password: EnvVariable::new("DATABASE_PASSWORD").as_string(),
         }
     }
 }
@@ -56,10 +60,14 @@ impl EnvVariable {
     }
 
     fn as_bool(&self) -> bool {
-        self.string_value.parse().expect(format!("{} is not a valid bool value", self.var_name).as_str())
+        self.string_value.parse()
+            .expect(format!("{} is not a valid bool value", self.var_name)
+                .as_str())
     }
 
     fn as_u16(&self) -> u16 {
-        self.string_value.parse().expect(format!("{} is not a valid u16 value", self.var_name).as_str())
+        self.string_value.parse()
+            .expect(format!("{} is not a valid u16 value", self.var_name)
+                .as_str())
     }
 }

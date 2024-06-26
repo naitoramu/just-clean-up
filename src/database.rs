@@ -1,47 +1,51 @@
-use std::env;
 use lazy_static::lazy_static;
-use sqlx::{MySql, MySqlPool};
-use sqlx::migrate::MigrateDatabase;
+use mongodb::Client;
+use mongodb::options::{ClientOptions, Credential, ServerAddress, ServerApi, ServerApiVersion};
 use tokio::sync::OnceCell;
 
+use crate::config::AppConfig;
+
 lazy_static! {
-    pub static ref CONNECTION: OnceCell<MySqlPool> = OnceCell::new();
+    pub static ref DATABASE: OnceCell<mongodb::Database> = OnceCell::new();
 }
 
 pub struct Database {
-    database_url: String,
+    client_options: ClientOptions
 }
 
 impl Database {
+
     pub fn new() -> Self {
-        Self { database_url: get_db_url() }
+        let credentials = Credential::builder()
+            .username(Some(AppConfig::get().db_username.clone()))
+            .password(Some(AppConfig::get().db_password.clone()))
+            .build();
+
+        let hosts = vec!(ServerAddress::Tcp {
+            host: AppConfig::get().db_url.clone(),
+            port: None
+        });
+
+        let client_options = ClientOptions::builder()
+            .app_name(Some("JustCleanUp-API".to_string()))
+            .credential(Some(credentials))
+            .hosts(hosts)
+            .server_api(ServerApi::builder().version(ServerApiVersion::V1).build())
+            .build();
+
+        Self { client_options }
     }
 
-    pub async fn create_db_if_not_exists(&self) -> &Self {
-        if !MySql::database_exists(self.database_url.as_str()).await.unwrap_or(false) {
-            println!("Creating database {}", self.database_url);
-            match MySql::create_database(self.database_url.as_str()).await {
-                Ok(_) => println!("Database created successfully"),
-                Err(error) => panic!("error: {}", error),
-            }
-        } else {
-            println!("Database already exists");
-        }
-        self
+    pub async fn establish_connection(&self) -> Result<(), mongodb::error::Error> {
+        let client = Client::with_options(self.client_options.clone())?
+            .database("just-clean-up");
+
+        DATABASE.set(client).expect("Cannot create database instance");
+
+        Ok(())
     }
 
-    pub async fn establish_connection(&self) {
-        let pool = MySqlPool::connect(self.database_url.as_str())
-            .await
-            .expect("Cannot establish db connection");
-        CONNECTION.set(pool).unwrap();
+    pub fn get_connection() -> &'static mongodb::Database {
+        DATABASE.get().expect("Cannot get database instance")
     }
-
-    pub fn get_connection() -> &'static MySqlPool {
-        CONNECTION.get().unwrap()
-    }
-}
-
-fn get_db_url() -> String {
-    env::var("DATABASE_URL").expect("$DATABASE_URL is not set!")
 }
