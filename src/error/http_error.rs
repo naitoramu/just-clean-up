@@ -1,9 +1,11 @@
 use std::collections::HashMap;
-use axum::{http::StatusCode, Json, response::{IntoResponse, Response}};
 use std::fmt;
+
+use axum::{http::StatusCode, Json, response::{IntoResponse, Response}};
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use crate::development_mode;
+
+use crate::config::AppConfig;
 use crate::error::http_error_kind::HttpErrorKind;
 
 #[derive(Debug)]
@@ -46,7 +48,7 @@ impl Serialize for HttpError {
         state.serialize_field("status", &self.status.as_u16())?;
         state.serialize_field("title", &self.title)?;
         state.serialize_field("detail", &self.detail)?;
-        if development_mode() {
+        if AppConfig::get().development_mode {
             state.serialize_field("internal_error", &self.internal_error)?;
         }
         state.end()
