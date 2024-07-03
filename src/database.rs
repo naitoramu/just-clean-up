@@ -1,12 +1,12 @@
 use lazy_static::lazy_static;
 use mongodb::Client;
-use mongodb::options::{ClientOptions, Credential, ServerAddress, ServerApi, ServerApiVersion};
+use mongodb::options::{ClientOptions, Credential};
 use tokio::sync::OnceCell;
 
 use crate::config::AppConfig;
 
 lazy_static! {
-    pub static ref DATABASE: OnceCell<mongodb::Database> = OnceCell::new();
+    static ref DATABASE: OnceCell<mongodb::Database> = OnceCell::new();
 }
 
 pub struct Database {
@@ -15,34 +15,39 @@ pub struct Database {
 
 impl Database {
 
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
+        let mut client_options = ClientOptions::parse(AppConfig::get().db_url.clone()).await
+            .expect("Cannot parse database URL.");
+
         let credentials = Credential::builder()
             .username(Some(AppConfig::get().db_username.clone()))
             .password(Some(AppConfig::get().db_password.clone()))
             .build();
 
-        let hosts = vec!(ServerAddress::Tcp {
-            host: AppConfig::get().db_url.clone(),
-            port: None
-        });
-
-        let client_options = ClientOptions::builder()
-            .app_name(Some("JustCleanUp-API".to_string()))
-            .credential(Some(credentials))
-            .hosts(hosts)
-            .server_api(ServerApi::builder().version(ServerApiVersion::V1).build())
-            .build();
+        client_options.credential = Some(credentials);
 
         Self { client_options }
     }
 
-    pub async fn establish_connection(&self) -> Result<(), mongodb::error::Error> {
-        let client = Client::with_options(self.client_options.clone())?
+    pub async fn establish_connection(&self) -> Result<&Self, mongodb::error::Error> {
+        let database = Client::with_options(self.client_options.clone())?
             .database("just-clean-up");
 
-        DATABASE.set(client).expect("Cannot create database instance");
+        DATABASE.set(database).expect("Cannot create database instance");
 
-        Ok(())
+        Ok(self)
+    }
+
+    pub async fn create_collections(&self) -> Result<&Self, mongodb::error::Error> {
+        let collection_names = vec![
+            "users"
+        ];
+
+        for collection_name in collection_names {
+            Self::get_connection().create_collection(collection_name).await?;
+        }
+
+        Ok(self)
     }
 
     pub fn get_connection() -> &'static mongodb::Database {

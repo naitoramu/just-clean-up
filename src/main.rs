@@ -11,6 +11,11 @@ mod config;
 
 #[tokio::main]
 async fn main() {
-    Database::new().establish_connection().await.expect("Cannot establish database connection");
+    Database::new().await
+        .establish_connection().await
+        .expect("Cannot establish database connection")
+        .create_collections().await
+        .expect("Cannot create collection");
+
     Server::run().await;
 }
