@@ -13,7 +13,7 @@ use crate::error::http_error_kind::HttpErrorKind::CannotFetchResources;
 use crate::repositories::Repository;
 
 pub fn routes(db: &Database) -> Router {
-    let user_repository = db.get_user_repository();
+    let user_repository: Arc<dyn Repository<User> + Send + Sync> = db.get_user_repository();
     Router::new()
         .route("/users", get(get_users))
         .route("/users", post(create_user))
@@ -33,7 +33,7 @@ async fn get_users(State(user_repository): State<Arc<dyn Repository<User>>>) -> 
 async fn get_user(Path(id): Path<String>, State(user_repository): State<Arc<dyn Repository<User>>>) -> Response {
     match user_repository.get_by_id(id).await {
         Ok(user) => user.unwrap_or(User {
-            id: 0,
+            id: "brak".to_string(),
             username: "".to_string(),
             email: "".to_string(),
             password: "".to_string(),

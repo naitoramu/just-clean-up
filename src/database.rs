@@ -24,7 +24,6 @@ impl Database {
     pub fn get_user_repository(&self) -> Arc<dyn Repository<User> + Send + Sync> {
         Arc::new(UserRepository::new(
             self.mongo_database.as_ref().expect("Database not initialized").get_connection(),
-            "users"
         ))
     }
 
