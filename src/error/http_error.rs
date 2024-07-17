@@ -26,7 +26,7 @@ impl HttpError {
             error_type.get_status_code(),
             error_type.get_title(),
             error_type.get_detail(),
-            error_type.get_internal_error().to_string(),
+            error_type.get_internal_error().as_ref().to_string(),
         )
     }
 
