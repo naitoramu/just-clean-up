@@ -6,16 +6,11 @@ mod repositories;
 mod error;
 mod server;
 mod controllers;
-mod database;
+mod mongo_database;
 mod config;
+mod database;
 
 #[tokio::main]
 async fn main() {
-    Database::new().await
-        .establish_connection().await
-        .expect("Cannot establish database connection")
-        .create_collections().await
-        .expect("Cannot create collection");
-
-    Server::run().await;
+    Server::run(Database::mongo_db_connection().await).await;
 }

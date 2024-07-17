@@ -1,9 +1,9 @@
+use std::error::Error;
 use std::fmt;
 use axum::http::StatusCode;
 use convert_case::{Case, Casing};
 use lazy_static::lazy_static;
 use regex::Regex;
-use sqlx::Error;
 use toml::Value;
 use crate::error::ERROR_DETAILS;
 
@@ -14,11 +14,11 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum HttpErrorKind {
-    ResourceNotFound(Error),
-    CannotFetchResources(Error),
-    CannotCreateResource(Error),
-    CannotUpdateResource(Error),
-    CannotDeleteResource(Error),
+    ResourceNotFound(Box<dyn Error>),
+    CannotFetchResources(Box<dyn Error>),
+    CannotCreateResource(Box<dyn Error>),
+    CannotUpdateResource(Box<dyn Error>),
+    CannotDeleteResource(Box<dyn Error>),
 }
 
 impl HttpErrorKind {
@@ -56,7 +56,7 @@ impl HttpErrorKind {
             .to_string()
     }
 
-    pub fn get_internal_error(&self) -> &Error {
+    pub fn get_internal_error(&self) -> &Box<dyn Error> {
         match self {
             HttpErrorKind::ResourceNotFound(error) |
             HttpErrorKind::CannotFetchResources(error) |
