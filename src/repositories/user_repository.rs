@@ -1,8 +1,9 @@
 use std::error::Error;
-
+use std::str::FromStr;
 use async_trait::async_trait;
 use futures::TryStreamExt;
 use mongodb::bson::doc;
+use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
 
 use crate::entities::User;
@@ -15,23 +16,27 @@ pub struct UserRepository {
 }
 
 impl UserRepository {
-    pub fn new(database: &mongodb::Database, collection_name: &str) -> Self {
-        UserRepository { collection: database.collection(collection_name) }
+    pub fn new(database: &mongodb::Database) -> Self {
+        UserRepository { collection: database.collection("users") }
     }
 
 }
 
 #[async_trait]
 impl Repository<User> for UserRepository {
+
     async fn get_all(&self) -> Result<Vec<User>, Box<dyn Error>> {
         match self.collection.find( doc! {} ).await {
-            Ok(user) => Ok(user.try_collect().await.unwrap()),
+            Ok(users) => Ok(users.try_collect().await.unwrap()),
             Err(error) => Err(error.into())
         }
     }
 
     async fn get_by_id(&self, id: String) -> Result<Option<User>, Box<dyn Error>> {
-        match self.collection.find_one(doc! { "_id": id }).await {
+        let object_id = ObjectId::from_str(id.as_str())
+            .expect(format!("ID '{id}' not valid ObjectId value").as_str());
+
+        match self.collection.find_one(doc! { "_id": object_id }).await {
             Ok(user) => Ok(user),
             Err(error) => Err(error.into())
         }

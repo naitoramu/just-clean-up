@@ -1,14 +1,17 @@
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
+use mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
 use serde::{Deserialize, Serialize};
-use serde_valid::Validate;
+
 use crate::entities::Entity;
 
-#[derive(Validate, Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct User {
-    #[serde(skip_deserializing)]
-    pub id: u64,
+
+    #[serde(rename = "_id")]
+    #[serde(deserialize_with = "deserialize_hex_string_from_object_id")]
+    pub id: String,
 
     pub username: String,
 
