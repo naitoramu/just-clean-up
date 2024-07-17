@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use axum::Router;
 
 use crate::config::AppConfig;
-use crate::controllers::user_controller;
+use crate::api::controller::user_controller;
 use crate::database::Database;
 
 pub struct Server {}
