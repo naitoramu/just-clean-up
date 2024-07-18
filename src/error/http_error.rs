@@ -26,7 +26,7 @@ impl HttpError {
             error_type.get_status_code(),
             error_type.get_title(),
             error_type.get_detail(),
-            error_type.get_internal_error().as_ref().to_string(),
+            error_type.get_internal_error(),
         )
     }
 
@@ -61,9 +61,16 @@ impl fmt::Display for HttpError {
     }
 }
 
-// So that errors get printed to the browser?
-impl IntoResponse for HttpError {
-    fn into_response(self) -> Response {
-        (self.status, Json(self)).into_response()
+impl From<HttpError> for Response {
+    fn from(error: HttpError) -> Self {
+        (error.status, Json(error)).into_response()
     }
 }
+
+impl From<&HttpError> for Response {
+    fn from(error: &HttpError) -> Self {
+        (error.status, Json(error)).into_response()
+    }
+}
+
+impl std::error::Error for HttpError {}
