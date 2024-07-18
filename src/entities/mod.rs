@@ -1,6 +1,6 @@
-mod user;
-
 pub use self::user::User;
+
+mod user;
 
 pub trait Entity {
     fn get_struct_name() -> String {

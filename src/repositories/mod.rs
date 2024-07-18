@@ -23,8 +23,10 @@ pub trait Repository<T>: Send + Sync {
 struct ObjectIdMapper;
 impl ObjectIdMapper {
 
-    fn map_to_object_id(id_as_str: &str) -> ObjectId {
-        ObjectId::from_str(id_as_str)
-            .expect(format!("ID '{id_as_str}' not valid ObjectId value").as_str())
+    fn map_to_object_id(id_as_str: &str) -> Result<ObjectId, Box<dyn Error>> {
+        match ObjectId::from_str(id_as_str) {
+            Ok(object_id) => Ok(object_id),
+            Err(error) => Err(error.into())
+        }
     }
 }

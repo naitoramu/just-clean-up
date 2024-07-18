@@ -1,10 +1,13 @@
 use std::error::Error;
 use std::fmt;
+
 use axum::http::StatusCode;
 use convert_case::{Case, Casing};
 use lazy_static::lazy_static;
+use mongodb::bson;
 use regex::Regex;
 use toml::Value;
+
 use crate::error::ERROR_DETAILS;
 
 lazy_static! {
@@ -13,16 +16,14 @@ lazy_static! {
 }
 
 #[derive(Debug)]
-pub enum HttpErrorKind {
+pub enum ProblemType {
     InternalServerError(Box<dyn Error>),
-    ResourceNotFound(String),
-    CannotFetchResources(Box<dyn Error>),
-    CannotCreateResource(Box<dyn Error>),
-    CannotUpdateResource(Box<dyn Error>),
-    CannotDeleteResource(Box<dyn Error>),
+    ResourceNotFound,
+    BadRequest,
+    InvalidObjectId(bson::oid::Error),
 }
 
-impl HttpErrorKind {
+impl ProblemType {
     pub fn to_kebab_case(&self) -> String {
         PARENTHESES_PATTERN
             .replace(self.to_string().as_str(), "")
@@ -31,18 +32,16 @@ impl HttpErrorKind {
 
     pub fn get_status_code(&self) -> StatusCode {
         match self {
-            HttpErrorKind::ResourceNotFound(_) => StatusCode::NOT_FOUND,
+            ProblemType::ResourceNotFound => StatusCode::NOT_FOUND,
 
-            HttpErrorKind::InternalServerError(_) |
-            HttpErrorKind::CannotFetchResources(_) |
-            HttpErrorKind::CannotDeleteResource(_) |
-            HttpErrorKind::CannotCreateResource(_) |
-            HttpErrorKind::CannotUpdateResource(_) => StatusCode::INTERNAL_SERVER_ERROR
+            ProblemType::InvalidObjectId(_) |
+            ProblemType::BadRequest => StatusCode::BAD_REQUEST,
+
+            _ => StatusCode::INTERNAL_SERVER_ERROR
         }
     }
 
     pub fn get_title(&self) -> String {
-        println!("{}", self.to_kebab_case());
         ERROR_DETAILS.get(self.to_kebab_case())
             .and_then(|err| err.get("title"))
             .and_then(Value::as_str)
@@ -58,20 +57,18 @@ impl HttpErrorKind {
             .to_string()
     }
 
-    pub fn get_internal_error(&self) -> String {
+    pub fn get_internal_error(&self) -> Option<String> {
         match self {
-            HttpErrorKind::InternalServerError(error) |
-            HttpErrorKind::CannotFetchResources(error) |
-            HttpErrorKind::CannotCreateResource(error) |
-            HttpErrorKind::CannotDeleteResource(error) |
-            HttpErrorKind::CannotUpdateResource(error) => error.to_string(),
+            ProblemType::InternalServerError(error) => Some(error.to_string()),
+            ProblemType::InvalidObjectId(error) => Some(error.to_string()),
 
-            HttpErrorKind::ResourceNotFound(id) => format!("Resource with ID '{id}' does not exists.")
+            ProblemType::BadRequest |
+            ProblemType::ResourceNotFound => None
         }
     }
 }
 
-impl fmt::Display for HttpErrorKind {
+impl fmt::Display for ProblemType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }

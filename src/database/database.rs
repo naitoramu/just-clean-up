@@ -1,6 +1,6 @@
 use std::sync::Arc;
+use crate::database::mongo_database::MongoDatabase;
 use crate::entities::User;
-use crate::mongo_database::MongoDatabase;
 use crate::repositories::Repository;
 use crate::repositories::user_repository::UserRepository;
 
@@ -26,5 +26,4 @@ impl Database {
             self.mongo_database.as_ref().expect("Database not initialized").get_connection(),
         ))
     }
-
 }

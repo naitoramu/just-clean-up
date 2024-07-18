@@ -2,9 +2,10 @@ use std::fs::read_to_string;
 use lazy_static::lazy_static;
 use toml::{from_str, Value};
 
-pub mod http_error;
-pub mod http_error_kind;
+pub mod json_problem;
+pub mod problem_type;
 pub mod error_handler;
+pub mod json_problems;
 
 lazy_static! {
     pub static ref ERROR_DETAILS: Value = load_http_errors_toml();
