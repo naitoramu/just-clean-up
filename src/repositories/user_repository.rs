@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::str::FromStr;
+
 use async_trait::async_trait;
 use futures::TryStreamExt;
 use mongodb::bson::doc;
@@ -7,7 +8,6 @@ use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
 
 use crate::entities::User;
-use crate::error::http_error::HttpError;
 use crate::repositories::Repository;
 
 #[derive(Clone)]
@@ -16,10 +16,10 @@ pub struct UserRepository {
 }
 
 impl UserRepository {
+
     pub fn new(database: &mongodb::Database) -> Self {
         UserRepository { collection: database.collection("users") }
     }
-
 }
 
 #[async_trait]
@@ -42,15 +42,21 @@ impl Repository<User> for UserRepository {
         }
     }
 
-    async fn create(&self, entity: &User) -> Result<User, HttpError> {
+    async fn create(&self, entity: &User) -> Result<User, Box<dyn Error>> {
+        match self.collection.insert_one(entity).await {
+            Ok(insert_result) => {
+                let created: Option<User> = self.get_by_id(insert_result.inserted_id.as_object_id().unwrap().to_hex()).await?;
+                Ok(created.expect("Inserting document failed"))
+            },
+            Err(error) => Err(error.into())
+        }
+    }
+
+    async fn update(&self, id: String, entity: &User) -> Result<User, Box<dyn Error>> {
         todo!()
     }
 
-    async fn update(&self, id: String, entity: &User) -> Result<User, HttpError> {
-        todo!()
-    }
-
-    async fn delete(&self, id: String) -> Result<(), HttpError> {
+    async fn delete(&self, id: String) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 }

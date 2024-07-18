@@ -11,6 +11,7 @@ pub struct User {
 
     #[serde(rename = "_id")]
     #[serde(deserialize_with = "deserialize_hex_string_from_object_id")]
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub id: String,
 
     pub username: String,

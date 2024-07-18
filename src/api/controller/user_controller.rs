@@ -47,20 +47,20 @@ async fn get_user(
 async fn create_user(State(user_repository): State<Arc<dyn Repository<User>>>, Json(body): Json<UserDto>) -> Response {
     match user_repository.create(&body.to_entity()).await {
         Ok(user) => user.to_dto().into_response(StatusCode::CREATED),
-        Err(err) => err.into_response()
+        Err(error) => HttpError::from_type(CannotFetchResources(error)).into_response()
     }
 }
 
 async fn update_user(Path(id): Path<String>, State(user_repository): State<Arc<dyn Repository<User>>>, Json(body): Json<UserDto>) -> Response {
     match user_repository.update(id, &body.to_entity()).await {
         Ok(user) => user.to_dto().try_into().unwrap(),
-        Err(err) => err.into_response()
+        Err(error) => HttpError::from_type(CannotFetchResources(error)).into_response()
     }
 }
 
 async fn delete_user(Path(id): Path<String>, State(user_repository): State<Arc<dyn Repository<User>>>) -> Response {
     match user_repository.delete(id).await {
         Ok(_) => (StatusCode::NO_CONTENT).into_response(),
-        Err(err) => err.into_response()
+        Err(error) => HttpError::from_type(CannotFetchResources(error)).into_response()
     }
 }

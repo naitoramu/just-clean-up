@@ -1,7 +1,6 @@
 use std::error::Error;
-use async_trait::async_trait;
 
-use crate::error::http_error::HttpError;
+use async_trait::async_trait;
 
 pub mod user_repository;
 
@@ -12,9 +11,9 @@ pub trait Repository<T>: Send + Sync {
 
     async fn get_by_id(&self, id: String) -> Result<Option<T>, Box<dyn Error>>;
 
-    async fn create(&self, entity: &T) -> Result<T, HttpError>;
+    async fn create(&self, entity: &T) -> Result<T, Box<dyn Error>>;
 
-    async fn update(&self, id: String, entity: &T) -> Result<T, HttpError>;
+    async fn update(&self, id: String, entity: &T) -> Result<T, Box<dyn Error>>;
 
-    async fn delete(&self, id: String) -> Result<(), HttpError>;
+    async fn delete(&self, id: String) -> Result<(), Box<dyn Error>>;
 }
