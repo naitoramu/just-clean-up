@@ -14,7 +14,8 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum HttpErrorKind {
-    ResourceNotFound(Box<dyn Error>),
+    InternalServerError(Box<dyn Error>),
+    ResourceNotFound(String),
     CannotFetchResources(Box<dyn Error>),
     CannotCreateResource(Box<dyn Error>),
     CannotUpdateResource(Box<dyn Error>),
@@ -32,6 +33,7 @@ impl HttpErrorKind {
         match self {
             HttpErrorKind::ResourceNotFound(_) => StatusCode::NOT_FOUND,
 
+            HttpErrorKind::InternalServerError(_) |
             HttpErrorKind::CannotFetchResources(_) |
             HttpErrorKind::CannotDeleteResource(_) |
             HttpErrorKind::CannotCreateResource(_) |
@@ -56,13 +58,15 @@ impl HttpErrorKind {
             .to_string()
     }
 
-    pub fn get_internal_error(&self) -> &Box<dyn Error> {
+    pub fn get_internal_error(&self) -> String {
         match self {
-            HttpErrorKind::ResourceNotFound(error) |
+            HttpErrorKind::InternalServerError(error) |
             HttpErrorKind::CannotFetchResources(error) |
             HttpErrorKind::CannotCreateResource(error) |
             HttpErrorKind::CannotDeleteResource(error) |
-            HttpErrorKind::CannotUpdateResource(error) => error,
+            HttpErrorKind::CannotUpdateResource(error) => error.to_string(),
+
+            HttpErrorKind::ResourceNotFound(id) => format!("Resource with ID '{id}' does not exists.")
         }
     }
 }

@@ -30,12 +30,6 @@ impl UserDto {
     }
 }
 
-impl IntoResponse for UserDto {
-    fn into_response(self) -> Response {
-        Json(self).into_response()
-    }
-}
-
 impl From<UserDto> for Response {
     fn from(value: UserDto) -> Self {
         Json(value).into_response()
