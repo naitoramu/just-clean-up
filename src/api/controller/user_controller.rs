@@ -7,7 +7,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post, put};
 
 use crate::api::dto::user_dto::UserDto;
-use crate::database::Database;
+use crate::database::database::Database;
 use crate::entities::User;
 use crate::error::error_handler::ErrorHandler;
 use crate::repositories::Repository;
@@ -23,10 +23,12 @@ pub fn routes(db: &Database) -> Router {
         .with_state(user_repository)
 }
 
-async fn get_users(State(user_repository): State<Arc<dyn Repository<User>>>) -> Response  {
+async fn get_users(
+    State(user_repository): State<Arc<dyn Repository<User>>>
+) -> Response  {
 
     match user_repository.get_all().await {
-        Ok(users) => Json(users.iter().map(|entity| entity.clone().to_dto()).collect::<Vec<UserDto>>()).into_response(),
+        Ok(users) => Json(map_to_dtos(users)).into_response(),
         Err(error) => ErrorHandler::handle_error(error)
     }
 }
@@ -74,4 +76,10 @@ async fn delete_user(
         Ok(_) => (StatusCode::NO_CONTENT).into_response(),
         Err(error) => ErrorHandler::handle_error(error)
     }
+}
+
+fn map_to_dtos(entities: Vec<User>) -> Vec<UserDto> {
+    entities.iter()
+        .map(|entity| entity.clone().to_dto())
+        .collect::<Vec<UserDto>>()
 }

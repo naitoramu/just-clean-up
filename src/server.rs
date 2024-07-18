@@ -4,7 +4,7 @@ use axum::Router;
 
 use crate::config::AppConfig;
 use crate::api::controller::user_controller;
-use crate::database::Database;
+use crate::database::database::Database;
 
 pub struct Server {}
 
