@@ -1,6 +1,5 @@
 use std::env;
 
-use dotenv::dotenv;
 use lazy_static::lazy_static;
 use tokio::sync::OnceCell;
 
@@ -14,8 +13,6 @@ pub struct AppConfig {
     pub base_path: String,
     pub development_mode: bool,
     pub db_url: String,
-    pub db_username: String,
-    pub db_password: String,
 }
 
 impl AppConfig {
@@ -29,14 +26,11 @@ impl AppConfig {
     }
 
     fn new() -> Self {
-        dotenv().ok();
         Self {
             port: EnvVariable::new("PORT").as_u16(),
             base_path: EnvVariable::new("BASE_PATH").as_string(),
             development_mode: EnvVariable::new("DEV_MODE").as_bool(),
             db_url: EnvVariable::new("DATABASE_URL").as_string(),
-            db_username: EnvVariable::new("DATABASE_USERNAME").as_string(),
-            db_password: EnvVariable::new("DATABASE_PASSWORD").as_string(),
         }
     }
 }

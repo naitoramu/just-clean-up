@@ -1,4 +1,5 @@
-use crate::database::database::Database;
+use log::debug;
+use crate::config::AppConfig;
 use crate::server::Server;
 
 mod entities;
@@ -6,12 +7,18 @@ mod repositories;
 mod error;
 mod server;
 mod config;
-mod database;
-mod api;
 mod mapper;
+mod api;
+mod database;
 
 #[tokio::main]
 async fn main() {
+    dotenv::dotenv().ok();
     env_logger::init();
-    Server::run(Database::mongo_db_connection().await).await;
+
+    debug!("Starting server");
+    Server::run(
+        AppConfig::get().port,
+        AppConfig::get().base_path.clone(),
+    ).await;
 }
