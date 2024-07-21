@@ -1,11 +1,9 @@
 import subprocess
 import time
-import pymongo
-import pytest
 import socket
 import os
-
 import requests
+import pymongo
 
 
 def find_free_port():
@@ -14,13 +12,13 @@ def find_free_port():
         return s.getsockname()[1]
 
 
-@pytest.fixture(scope="session")
-def mongo_url():
+def before_all(context):
+    # Set up MongoDB
     mongo_port = find_free_port()
     mongo_user = "it-user"
     mongo_passwd = "it-passwd"
 
-    mongo_process = subprocess.Popen([
+    context.mongo_process = subprocess.Popen([
         "docker", "run", "--name", "mongo-test", "-d",
         "-p", f"{mongo_port}:27017",
         "-e", f"MONGO_INITDB_ROOT_USERNAME={mongo_user}",
@@ -28,45 +26,38 @@ def mongo_url():
         "mongo"
     ])
 
-    yield f"mongodb://{mongo_user}:{mongo_passwd}@localhost:{mongo_port}"
+    context.mongo_url = f"mongodb://{mongo_user}:{mongo_passwd}@localhost:{mongo_port}"
 
-    mongo_process.terminate()
+    # Wait for MongoDB to start
+    time.sleep(5)
 
-
-@pytest.fixture(scope="session", autouse=True)
-def api_server(mongo_url):
-    time.sleep(5)  # Czekamy, aż MongoDB się uruchomi
-
-    # Find an available port for Rust app
+    # Set up Rust API server
     rust_port = find_free_port()
-
-    # Set environment variables for the Rust application
     env = os.environ.copy()
-    env["DATABASE_URL"] = mongo_url
+    env["DATABASE_URL"] = context.mongo_url
     env["PORT"] = str(rust_port)
 
-    # Start the Rust application
-    rust_app_process = subprocess.Popen(["./target/release/just-clean-up"], env=env)
-    api_url = f"http://localhost:{rust_port}"
+    context.rust_app_process = subprocess.Popen(["./target/release/just-clean-up"], env=env)
+    context.api_url = f"http://localhost:{rust_port}"
+
+    # Wait for the API server to be ready
     for _ in range(20):
         try:
-            requests.get(f"{api_url}/health")
+            requests.get(f"{context.api_url}/health")
             break
         except requests.ConnectionError:
             time.sleep(1)
     else:
         raise Exception("API failed to start in the expected time")
 
-    yield api_url
 
-    # Teardown
-    rust_app_process.terminate()
+def after_all(context):
+    context.rust_app_process.terminate()
     subprocess.run(["docker", "rm", "-f", "mongo-test"])
 
 
-@pytest.fixture(autouse=True)
-def clear_database(mongo_url):
-    client = pymongo.MongoClient(mongo_url)
+def before_scenario(context, scenario):
+    client = pymongo.MongoClient(context.mongo_url)
     db = client["just-clean-up"]
 
     for collection_name in db.list_collection_names():
