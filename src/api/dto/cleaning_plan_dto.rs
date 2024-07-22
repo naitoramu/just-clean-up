@@ -1,18 +1,26 @@
-use std::path::Path;
+use axum::Json;
+use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
+
+use crate::entities::cleaning_plan::CleaningPlan;
+use crate::mapper::cleaning_plan_mapper::CleaningPlanMapper;
+use crate::mapper::Mapper;
 
 #[derive(Serialize, Deserialize)]
 pub struct CleaningPlanDto {
 
-    title: String,
+    #[serde(skip_deserializing)]
+    pub id: String,
 
-    address: String,
+    pub title: String,
 
-    cleaner_ids: Vec<String>,
+    pub address: String,
 
-    duties: Vec<DutyDto>,
+    pub cleaner_ids: Vec<String>,
 
-    start_date: u64
+    pub duties: Vec<DutyDto>,
+
+    pub start_date: u64
 }
 
 #[derive(Serialize, Deserialize)]
@@ -23,11 +31,23 @@ pub struct DutyDto {
     pub description: String,
 
     #[serde(skip_deserializing)]
-    pub img_src: Path,
+    pub img_src: Option<String>,
 
     pub repetition: String,
 
     pub offset: String,
 
     pub penalty: String
+}
+
+impl From<CleaningPlanDto> for Response {
+    fn from(value: CleaningPlanDto) -> Self {
+        Json(value).into_response()
+    }
+}
+
+impl From<CleaningPlanDto> for CleaningPlan {
+    fn from(dto: CleaningPlanDto) -> Self {
+        <dyn CleaningPlanMapper>::map_to_entity(dto)
+    }
 }

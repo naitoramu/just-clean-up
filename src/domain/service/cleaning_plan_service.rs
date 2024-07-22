@@ -10,6 +10,9 @@ pub struct CleaningPlanService {
 }
 
 impl CleaningPlanService {
+}
+
+impl CleaningPlanService {
 
     pub fn new(
         user_repository: Arc<dyn Repository<User> + Send + Sync>,
@@ -18,7 +21,19 @@ impl CleaningPlanService {
         CleaningPlanService { user_repository, cleaning_plan_repository }
     }
 
-    pub fn create_cleaning_plan(&self, cleaning_plan: CleaningPlan) -> Result<User, Box<dyn Error>> {
+    pub async fn get_cleaning_plan_by_id(&self, id: String) -> Result<CleaningPlan, Box<dyn Error>> {
+        todo!()
+    }
+
+    pub async fn create_cleaning_plan(&self, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, Box<dyn Error>> {
+        todo!()
+    }
+
+    pub async fn update_cleaning_plan(&self, id: String, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, Box<dyn Error>> {
+        todo!()
+    }
+
+    pub async fn delete_cleaning_plan(&self, id: String) -> Result<(), Box<dyn Error>> {
         todo!()
     }
 }

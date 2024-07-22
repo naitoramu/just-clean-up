@@ -15,6 +15,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="$USER_HOME$/.miniconda/envs/just-clean-up-it interpreter library" level="application" />
   </component>
 </module>

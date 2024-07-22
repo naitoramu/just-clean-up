@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use mongodb::bson::oid::ObjectId;
 
 pub mod user_repository;
-mod cleaning_plan_repository;
+pub mod cleaning_plan_repository;
 
 #[async_trait]
 pub trait Repository<T>: Send + Sync {

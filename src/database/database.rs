@@ -2,6 +2,7 @@ use std::sync::Arc;
 use crate::database::mongo_database::MongoDatabase;
 use crate::entities::cleaning_plan::CleaningPlan;
 use crate::entities::User;
+use crate::repositories::cleaning_plan_repository::CleaningPlanRepository;
 use crate::repositories::Repository;
 use crate::repositories::user_repository::UserRepository;
 

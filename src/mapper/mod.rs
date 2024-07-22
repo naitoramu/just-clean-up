@@ -1,4 +1,5 @@
 pub mod user_mapper;
+pub mod cleaning_plan_mapper;
 
 pub trait Mapper<D, E> {
 
