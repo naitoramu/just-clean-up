@@ -12,6 +12,8 @@ impl Server {
         let db = Database::mongo_db_connection().await;
         debug!("Database connection established");
 
+
+
         let app = Router::new()
             .merge(health_controller::routes())
             .nest(base_path.as_str(), Router::new()
