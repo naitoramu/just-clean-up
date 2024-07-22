@@ -81,5 +81,5 @@ async fn delete_user(
 fn map_to_dtos(entities: Vec<User>) -> Vec<UserDto> {
     entities.iter()
         .map(|entity| entity.clone().to_dto())
-        .collect::<Vec<UserDto>>()
+        .collect()
 }
