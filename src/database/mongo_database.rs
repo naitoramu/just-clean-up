@@ -36,7 +36,8 @@ impl MongoDatabase {
 
     pub async fn create_collections(self) -> Result<Self, mongodb::error::Error> {
         let collection_names = vec![
-            "users"
+            "users",
+            "cleaning-plans"
         ];
 
         for collection_name in collection_names {

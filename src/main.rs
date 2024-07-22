@@ -10,6 +10,8 @@ mod config;
 mod mapper;
 mod api;
 mod database;
+mod domain;
+mod state;
 
 #[tokio::main]
 async fn main() {

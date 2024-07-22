@@ -1,6 +1,9 @@
 pub use self::user::User;
 
 mod user;
+pub mod cleaning_plan;
+pub mod duty;
+pub mod penalty;
 
 pub trait Entity {
     fn get_struct_name() -> String {
