@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 
 use async_trait::async_trait;
@@ -8,17 +9,19 @@ use mongodb::Collection;
 
 use crate::entities::User;
 use crate::error::json_problems::JsonProblems;
-use crate::repositories::{ObjectIdMapper, Repository};
+use crate::repositories::ObjectIdMapper;
+use crate::repositories::crud_repository::CrudRepository;
+use crate::repositories::repository::Repository;
 
 #[derive(Clone)]
-pub struct UserRepository {
+pub struct MongoUserRepository {
     collection: Collection<User>,
 }
 
-impl UserRepository {
+impl MongoUserRepository {
 
     pub fn new(database: &mongodb::Database) -> Self {
-        UserRepository { collection: database.collection("users") }
+        MongoUserRepository { collection: database.collection("users") }
     }
 
     async fn get_by_object_id(&self, object_id: ObjectId) -> Result<User, Box<dyn Error>> {
@@ -33,7 +36,27 @@ impl UserRepository {
 }
 
 #[async_trait]
-impl Repository<User> for UserRepository {
+impl Repository<User> for MongoUserRepository {
+
+    async fn find_first_matching(&self, filter: HashMap<&str, String>) -> Result<Option<User>, Box<dyn Error>> {
+
+        match self.collection.find_one(to_document(&filter).unwrap()).await {
+            Ok(user) => Ok(user),
+            Err(error) => Err(error.into())
+        }
+    }
+
+    async fn find_all_matching(&self, filter: HashMap<&str, String>) -> Result<Vec<User>, Box<dyn Error>> {
+
+        match self.collection.find(to_document(&filter).unwrap()).await {
+            Ok(users) => Ok(users.try_collect().await.unwrap()),
+            Err(error) => Err(error.into())
+        }
+    }
+}
+
+#[async_trait]
+impl CrudRepository<User> for MongoUserRepository {
 
     async fn get_all(&self) -> Result<Vec<User>, Box<dyn Error>> {
         match self.collection.find(doc! {}).await {

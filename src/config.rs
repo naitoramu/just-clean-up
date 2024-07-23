@@ -13,6 +13,7 @@ pub struct AppConfig {
     pub base_path: String,
     pub development_mode: bool,
     pub db_url: String,
+    pub token_secret: String,
 }
 
 impl AppConfig {
@@ -31,6 +32,7 @@ impl AppConfig {
             base_path: EnvVariable::new("BASE_PATH").as_string(),
             development_mode: EnvVariable::new("DEV_MODE").as_bool(),
             db_url: EnvVariable::new("DATABASE_URL").as_string(),
+            token_secret: EnvVariable::new("JWT_SECRET").as_string(),
         }
     }
 }

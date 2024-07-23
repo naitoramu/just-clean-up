@@ -10,10 +10,10 @@ use crate::api::dto::user_dto::UserDto;
 use crate::database::database::Database;
 use crate::entities::User;
 use crate::error::error_handler::ErrorHandler;
-use crate::repositories::Repository;
+use crate::repositories::crud_repository::CrudRepository;
 
 pub fn routes(db: &Database) -> Router {
-    let user_repository: Arc<dyn Repository<User> + Send + Sync> = db.get_user_repository();
+    let user_repository: Arc<dyn CrudRepository<User>> = db.get_user_repository();
     Router::new()
         .route("/users", get(get_users))
         .route("/users", post(create_user))
@@ -24,7 +24,7 @@ pub fn routes(db: &Database) -> Router {
 }
 
 async fn get_users(
-    State(user_repository): State<Arc<dyn Repository<User>>>
+    State(user_repository): State<Arc<dyn CrudRepository<User>>>
 ) -> Response  {
 
     match user_repository.get_all().await {
@@ -35,7 +35,7 @@ async fn get_users(
 
 async fn get_user(
     Path(id): Path<String>,
-    State(user_repository): State<Arc<dyn Repository<User>>>
+    State(user_repository): State<Arc<dyn CrudRepository<User>>>
 ) -> Response {
 
     match user_repository.get_by_id(id.clone()).await {
@@ -45,7 +45,7 @@ async fn get_user(
 }
 
 async fn create_user(
-    State(user_repository): State<Arc<dyn Repository<User>>>,
+    State(user_repository): State<Arc<dyn CrudRepository<User>>>,
     Json(body): Json<UserDto>
 ) -> Response {
 
@@ -57,7 +57,7 @@ async fn create_user(
 
 async fn update_user(
     Path(id): Path<String>,
-    State(user_repository): State<Arc<dyn Repository<User>>>,
+    State(user_repository): State<Arc<dyn CrudRepository<User>>>,
     Json(body): Json<UserDto>
 ) -> Response {
 
@@ -69,7 +69,7 @@ async fn update_user(
 
 async fn delete_user(
     Path(id): Path<String>,
-    State(user_repository): State<Arc<dyn Repository<User>>>
+    State(user_repository): State<Arc<dyn CrudRepository<User>>>
 ) -> Response {
 
     match user_repository.delete(id).await {

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::error::Error;
 
 use async_trait::async_trait;
@@ -7,9 +8,10 @@ use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
 
 use crate::entities::cleaning_plan::CleaningPlan;
-use crate::entities::User;
 use crate::error::json_problems::JsonProblems;
-use crate::repositories::{ObjectIdMapper, Repository};
+use crate::repositories::ObjectIdMapper;
+use crate::repositories::crud_repository::CrudRepository;
+use crate::repositories::repository::Repository;
 
 #[derive(Clone)]
 pub struct CleaningPlanRepository {
@@ -35,6 +37,25 @@ impl CleaningPlanRepository {
 
 #[async_trait]
 impl Repository<CleaningPlan> for CleaningPlanRepository {
+    async fn find_first_matching(&self, filter: HashMap<&str, String>) -> Result<Option<CleaningPlan>, Box<dyn Error>> {
+
+        match self.collection.find_one(to_document(&filter).unwrap()).await {
+            Ok(plan) => Ok(plan),
+            Err(error) => Err(error.into())
+        }
+    }
+
+    async fn find_all_matching(&self, filter: HashMap<&str, String>) -> Result<Vec<CleaningPlan>, Box<dyn Error>> {
+
+        match self.collection.find(to_document(&filter).unwrap()).await {
+            Ok(plans) => Ok(plans.try_collect().await.unwrap()),
+            Err(error) => Err(error.into())
+        }
+    }
+}
+
+#[async_trait]
+impl CrudRepository<CleaningPlan> for CleaningPlanRepository {
 
     async fn get_all(&self) -> Result<Vec<CleaningPlan>, Box<dyn Error>> {
         match self.collection.find(doc! {}).await {

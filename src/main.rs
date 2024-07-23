@@ -11,6 +11,7 @@ mod mapper;
 mod api;
 mod database;
 mod domain;
+mod jwt;
 
 #[tokio::main]
 async fn main() {
