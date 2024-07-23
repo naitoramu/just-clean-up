@@ -7,6 +7,7 @@ use crate::mapper::cleaning_plan_mapper::CleaningPlanMapper;
 use crate::mapper::Mapper;
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CleaningPlanDto {
 
     #[serde(skip_deserializing)]
@@ -24,6 +25,7 @@ pub struct CleaningPlanDto {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DutyDto {
 
     pub title: String,

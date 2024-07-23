@@ -22,18 +22,21 @@ impl CleaningPlanService {
     }
 
     pub async fn get_cleaning_plan_by_id(&self, id: String) -> Result<CleaningPlan, Box<dyn Error>> {
-        todo!()
+        let fetched_plan = self.cleaning_plan_repository.get_by_id(id).await?;
+        Ok(fetched_plan)
     }
 
     pub async fn create_cleaning_plan(&self, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, Box<dyn Error>> {
-        todo!()
+        let created_plan = self.cleaning_plan_repository.create(cleaning_plan).await?;
+        Ok(created_plan)
     }
 
     pub async fn update_cleaning_plan(&self, id: String, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, Box<dyn Error>> {
-        todo!()
+        let updated_plan = self.cleaning_plan_repository.update(id, cleaning_plan).await?;
+        Ok(updated_plan)
     }
 
     pub async fn delete_cleaning_plan(&self, id: String) -> Result<(), Box<dyn Error>> {
-        todo!()
+        self.cleaning_plan_repository.delete(id).await
     }
 }
