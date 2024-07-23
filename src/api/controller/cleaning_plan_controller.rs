@@ -9,7 +9,7 @@ use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
 use crate::database::database::Database;
 use crate::domain::service::cleaning_plan_service::CleaningPlanService;
 use crate::error::error_handler::ErrorHandler;
-use crate::repositories::Repository;
+use crate::repositories::crud_repository::CrudRepository;
 
 pub fn routes(db: &Database) -> Router {
     let cleaning_plan_service = Arc::new(CleaningPlanService::new(

@@ -2,11 +2,11 @@ use std::error::Error;
 use std::sync::Arc;
 use crate::entities::cleaning_plan::CleaningPlan;
 use crate::entities::User;
-use crate::repositories::Repository;
+use crate::repositories::crud_repository::CrudRepository;
 
 pub struct CleaningPlanService {
-    user_repository: Arc<dyn Repository<User> + Send + Sync>,
-    cleaning_plan_repository: Arc<dyn Repository<CleaningPlan> + Send + Sync>,
+    user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
+    cleaning_plan_repository: Arc<dyn CrudRepository<CleaningPlan> + Send + Sync>,
 }
 
 impl CleaningPlanService {
@@ -15,8 +15,8 @@ impl CleaningPlanService {
 impl CleaningPlanService {
 
     pub fn new(
-        user_repository: Arc<dyn Repository<User> + Send + Sync>,
-        cleaning_plan_repository: Arc<dyn Repository<CleaningPlan> + Send + Sync>,
+        user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
+        cleaning_plan_repository: Arc<dyn CrudRepository<CleaningPlan> + Send + Sync>,
     ) -> Self {
         CleaningPlanService { user_repository, cleaning_plan_repository }
     }
