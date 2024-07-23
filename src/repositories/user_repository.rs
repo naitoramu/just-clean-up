@@ -16,6 +16,7 @@ pub struct UserRepository {
 }
 
 impl UserRepository {
+
     pub fn new(database: &mongodb::Database) -> Self {
         UserRepository { collection: database.collection("users") }
     }
