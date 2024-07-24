@@ -21,6 +21,8 @@ pub enum ProblemType {
     ResourceNotFound,
     BadRequest,
     InvalidObjectId(bson::oid::Error),
+    AccessForbidden(Box<dyn Error>),
+    Unauthorized(Box<dyn Error>)
 }
 
 impl ProblemType {
@@ -37,7 +39,11 @@ impl ProblemType {
             ProblemType::InvalidObjectId(_) |
             ProblemType::BadRequest => StatusCode::BAD_REQUEST,
 
-            _ => StatusCode::INTERNAL_SERVER_ERROR
+            ProblemType::AccessForbidden(_) => StatusCode::FORBIDDEN,
+
+            ProblemType::Unauthorized(_) => StatusCode::UNAUTHORIZED,
+
+            ProblemType::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -59,11 +65,14 @@ impl ProblemType {
 
     pub fn get_internal_error(&self) -> Option<String> {
         match self {
+            ProblemType::AccessForbidden(error) |
+            ProblemType::Unauthorized(error) |
             ProblemType::InternalServerError(error) => Some(error.to_string()),
+
             ProblemType::InvalidObjectId(error) => Some(error.to_string()),
 
             ProblemType::BadRequest |
-            ProblemType::ResourceNotFound => None
+            ProblemType::ResourceNotFound => None,
         }
     }
 }
