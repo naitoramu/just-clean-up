@@ -27,4 +27,12 @@ impl User {
     }
 }
 
-impl Entity for User {}
+impl Entity for User {
+    fn get_resource_name() -> &'static str {
+        "User"
+    }
+
+    fn get_collection_name() -> &'static str {
+        "users"
+    }
+}

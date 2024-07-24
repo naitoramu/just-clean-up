@@ -2,9 +2,8 @@ use std::error::Error;
 use std::str::FromStr;
 use mongodb::bson::oid::ObjectId;
 
-pub mod mongo_user_repository;
-pub mod cleaning_plan_repository;
-pub mod repository;
+pub mod mongo_repository;
+pub mod filter_repository;
 pub mod crud_repository;
 
 

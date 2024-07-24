@@ -10,10 +10,11 @@ use crate::api::dto::user_dto::UserDto;
 use crate::database::database::Database;
 use crate::entities::User;
 use crate::error::error_handler::ErrorHandler;
+use crate::error::json_problems::JsonProblems;
 use crate::repositories::crud_repository::CrudRepository;
 
 pub fn routes(db: &Database) -> Router {
-    let user_repository: Arc<dyn CrudRepository<User>> = db.get_user_repository();
+    let user_repository: Arc<dyn CrudRepository<User>> = db.get_repository::<User>();
     Router::new()
         .route("/users", get(get_users))
         .route("/users", post(create_user))
@@ -39,7 +40,8 @@ async fn get_user(
 ) -> Response {
 
     match user_repository.get_by_id(id.clone()).await {
-        Ok(user) => user.to_dto().into(),
+        Ok(Some(user)) => user.to_dto().into(),
+        Ok(None) => JsonProblems::resource_not_found("User", id).into(),
         Err(error) => ErrorHandler::handle_error(error)
     }
 }

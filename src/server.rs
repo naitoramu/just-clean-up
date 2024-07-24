@@ -5,6 +5,7 @@ use log::{debug, info};
 use crate::api::controller::{auth_controller, cleaning_plan_controller, health_controller, user_controller};
 use crate::auth_middleware;
 use crate::database::database::Database;
+use crate::entities::User;
 
 pub struct Server;
 
@@ -15,7 +16,7 @@ impl Server {
 
 
         let auth_middleware = middleware::from_fn_with_state(
-            db.get_user_repository(),
+            db.get_repository::<User>(),
             auth_middleware::authorization_middleware
         );
 
