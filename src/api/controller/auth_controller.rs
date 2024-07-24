@@ -21,14 +21,14 @@ pub struct LoginDto {
 }
 
 pub fn public_routes(db: &Database) -> Router {
-    let user_repository: Arc<dyn CrudRepository<User>> = db.get_user_repository();
+    let user_repository: Arc<dyn CrudRepository<User>> = db.get_repository();
     Router::new()
         .route("/login", post(login_user))
         .with_state(user_repository)
 }
 
 pub fn private_routes(db: &Database) -> Router {
-    let user_repository: Arc<dyn CrudRepository<User>> = db.get_user_repository();
+    let user_repository: Arc<dyn CrudRepository<User>> = db.get_repository();
     Router::new()
         .route("/logout", post(logout_user))
         .with_state(user_repository)

@@ -2,14 +2,12 @@ use std::error::Error;
 use std::sync::Arc;
 use crate::entities::cleaning_plan::CleaningPlan;
 use crate::entities::User;
+use crate::error::json_problems::JsonProblems;
 use crate::repositories::crud_repository::CrudRepository;
 
 pub struct CleaningPlanService {
     user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
     cleaning_plan_repository: Arc<dyn CrudRepository<CleaningPlan> + Send + Sync>,
-}
-
-impl CleaningPlanService {
 }
 
 impl CleaningPlanService {
@@ -22,8 +20,10 @@ impl CleaningPlanService {
     }
 
     pub async fn get_cleaning_plan_by_id(&self, id: String) -> Result<CleaningPlan, Box<dyn Error>> {
-        let fetched_plan = self.cleaning_plan_repository.get_by_id(id).await?;
-        Ok(fetched_plan)
+        match self.cleaning_plan_repository.get_by_id(id.clone()).await? {
+            Some(plan) => Ok(plan),
+            None => Err(JsonProblems::resource_not_found("Cleaning Plan", id).into())
+        }
     }
 
     pub async fn create_cleaning_plan(&self, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, Box<dyn Error>> {

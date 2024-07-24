@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
 use crate::entities::duty::Duty;
+use crate::entities::Entity;
 use crate::mapper::cleaning_plan_mapper::CleaningPlanMapper;
 use crate::mapper::Mapper;
 
@@ -49,5 +50,15 @@ impl From<CleaningPlan> for Response {
 impl From<CleaningPlan> for CleaningPlanDto {
     fn from(entity: CleaningPlan) -> Self {
         <dyn CleaningPlanMapper>::map_to_dto(entity)
+    }
+}
+
+impl Entity for CleaningPlan {
+    fn get_resource_name() -> &'static str {
+        "Cleaning Plan"
+    }
+
+    fn get_collection_name() -> &'static str {
+        "cleaning-plans"
     }
 }
