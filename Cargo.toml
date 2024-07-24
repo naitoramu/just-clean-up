@@ -6,20 +6,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-futures = "0.3.28"
-axum = "0.6.19"
-async-trait = "0.1.71"
-tokio = { version = "1.29.1", features = ["full"] }
-serde = { version = "1.0.173", features = ["derive"] }
-serde_valid = "0.16.2"
-sqlx = { version = "0.7.1", features = [ "mysql", "macros", "runtime-async-std", "tls-rustls", "time" ] }
-mongodb = "3.0.0"
+futures = "0.3.30"
+axum = "0.7.5"
+async-trait = "0.1.81"
+tokio = { version = "1.39.1", features = ["full"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_valid = "0.24.0"
+sqlx = { version = "0.8.0", features = [ "mysql", "macros", "runtime-async-std", "tls-rustls", "time" ] }
+mongodb = "3.0.1"
 dotenv = "0.15.0"
-lazy_static = "1.4.0"
+lazy_static = "1.5.0"
 convert_case = "0.6.0"
-toml = "0.7.1"
-regex = "1.9.3"
-env_logger = "0.11.3"
+toml = "0.8.15"
+regex = "1.10.5"
+env_logger = "0.11.4"
 log = "0.4.22"
 port_scanner = "0.1.5"
 chrono = "0.4.38"

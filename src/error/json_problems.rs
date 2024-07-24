@@ -28,4 +28,12 @@ impl JsonProblems {
 
         JsonProblem::from_type(ProblemType::InvalidObjectId(oid_error.clone())).with_properties(properties)
     }
+
+    pub fn forbidden(error: Box<dyn std::error::Error>) -> JsonProblem {
+        JsonProblem::from_type(ProblemType::AccessForbidden(error))
+    }
+
+    pub fn unauthorized(error: Box<dyn std::error::Error>) -> JsonProblem {
+        JsonProblem::from_type(ProblemType::AccessForbidden(error))
+    }
 }

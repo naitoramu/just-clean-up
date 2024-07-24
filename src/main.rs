@@ -12,6 +12,7 @@ mod api;
 mod database;
 mod domain;
 mod jwt;
+mod auth_middleware;
 
 #[tokio::main]
 async fn main() {
