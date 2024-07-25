@@ -1,17 +1,18 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use axum::{Extension, Json, Router};
 use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::Response;
 use axum::routing::post;
 use serde::Deserialize;
 
 use crate::database::database::Database;
+use crate::domain::service::user_service::UserService;
 use crate::entities::User;
-use crate::error::error_handler::ErrorHandler;
+use crate::error::json_problem::JsonProblem;
+use crate::error::json_problems::JsonProblems;
 use crate::jwt;
+use crate::jwt::JwtToken;
 use crate::repositories::crud_repository::CrudRepository;
 
 #[derive(Deserialize)]
@@ -21,10 +22,10 @@ pub struct LoginDto {
 }
 
 pub fn public_routes(db: &Database) -> Router {
-    let user_repository: Arc<dyn CrudRepository<User>> = db.get_repository();
+    let user_service = Arc::new(UserService::new(db.get_repository::<User>()));
     Router::new()
         .route("/login", post(login_user))
-        .with_state(user_repository)
+        .with_state(user_service)
 }
 
 pub fn private_routes(db: &Database) -> Router {
@@ -36,19 +37,14 @@ pub fn private_routes(db: &Database) -> Router {
 
 
 async fn login_user(
-    State(user_repository): State<Arc<dyn CrudRepository<User>>>,
-    Json(credentials): Json<LoginDto>
-) -> Response {
-    match user_repository.find_first_matching(HashMap::from([
-        ("email", credentials.email),
-        ("password", credentials.password)
-    ])).await {
-        Ok(Some(user)) => match jwt::generate_jwt(user.id) {
-            Ok(token) => token.into(),
-            Err(err) => ErrorHandler::handle_error(err)
-        },
-        Ok(None) => (StatusCode::UNAUTHORIZED, "Incorrect credentials").into_response(),
-        Err(err) => ErrorHandler::handle_error(err)
+    State(user_service): State<Arc<UserService>>,
+    Json(LoginDto{ email, password }): Json<LoginDto>
+) -> Result<Json<JwtToken>, JsonProblem> {
+    match user_service.get_user_by_email_and_password(email, password).await? {
+        Some(user) => jwt::generate_jwt(user.id)
+            .map(Json::from)
+            .map_err(Into::into),
+        None => Err(JsonProblems::unauthorized("Invalid credentials".into())),
     }
 }
 

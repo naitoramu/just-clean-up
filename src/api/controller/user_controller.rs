@@ -3,85 +3,78 @@ use std::sync::Arc;
 use axum::{Json, Router};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post, put};
 
 use crate::api::dto::user_dto::UserDto;
 use crate::database::database::Database;
-use crate::entities::User;
-use crate::error::error_handler::ErrorHandler;
+use crate::domain::service::user_service::UserService;
+use crate::entities::{Entity, User};
+use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 use crate::repositories::crud_repository::CrudRepository;
 
 pub fn routes(db: &Database) -> Router {
-    let user_repository: Arc<dyn CrudRepository<User>> = db.get_repository::<User>();
+    let user_service = Arc::new(UserService::new(db.get_repository::<User>()));
     Router::new()
         .route("/users", get(get_users))
         .route("/users", post(create_user))
         .route("/users/:id", get(get_user))
         .route("/users/:id", put(update_user))
         .route("/users/:id", delete(delete_user))
-        .with_state(user_repository)
+        .with_state(user_service)
 }
 
 async fn get_users(
-    State(user_repository): State<Arc<dyn CrudRepository<User>>>
-) -> Response  {
+    State(user_service): State<Arc<UserService>>,
+) -> Result<Json<Vec<UserDto>>, JsonProblem>  {
 
-    match user_repository.get_all().await {
-        Ok(users) => Json(map_to_dtos(users)).into_response(),
-        Err(error) => ErrorHandler::handle_error(error)
-    }
+    let users = user_service.get_all_users().await?;
+    Ok(map_to_dtos(users))
 }
 
 async fn get_user(
     Path(id): Path<String>,
-    State(user_repository): State<Arc<dyn CrudRepository<User>>>
-) -> Response {
+    State(user_service): State<Arc<UserService>>,
+) -> Result<Json<UserDto>, JsonProblem>  {
 
-    match user_repository.get_by_id(id.clone()).await {
-        Ok(Some(user)) => user.to_dto().into(),
-        Ok(None) => JsonProblems::resource_not_found("User", id).into(),
-        Err(error) => ErrorHandler::handle_error(error)
+    match user_service.get_user_by_id(id.clone()).await? {
+        Some(user) => Ok(Json(user.into())),
+        None => Err(JsonProblems::resource_not_found(User::get_resource_name(), id))
     }
 }
 
 async fn create_user(
-    State(user_repository): State<Arc<dyn CrudRepository<User>>>,
+    State(user_service): State<Arc<UserService>>,
     Json(body): Json<UserDto>
-) -> Response {
+) -> Result<(StatusCode, Json<UserDto>), JsonProblem>  {
 
-    match user_repository.create(&body.to_entity()).await {
-        Ok(user) => user.to_dto().into_response(StatusCode::CREATED),
-        Err(error) => ErrorHandler::handle_error(error)
-    }
+    let user = user_service.create_user(&body.into()).await?;
+    Ok((StatusCode::CREATED, Json(user.into())))
 }
 
 async fn update_user(
     Path(id): Path<String>,
-    State(user_repository): State<Arc<dyn CrudRepository<User>>>,
+    State(user_service): State<Arc<UserService>>,
     Json(body): Json<UserDto>
-) -> Response {
+) -> Result<Json<UserDto>, JsonProblem>  {
 
-    match user_repository.update(id, &body.to_entity()).await {
-        Ok(user) => user.to_dto().into(),
-        Err(error) => ErrorHandler::handle_error(error)
-    }
+    let updated_user = user_service.update_user(id, &body.into()).await?;
+    Ok(Json(updated_user.into()))
 }
 
 async fn delete_user(
     Path(id): Path<String>,
-    State(user_repository): State<Arc<dyn CrudRepository<User>>>
-) -> Response {
+    State(user_service): State<Arc<UserService>>,
+) -> Result<StatusCode, JsonProblem>  {
 
-    match user_repository.delete(id).await {
-        Ok(_) => (StatusCode::NO_CONTENT).into_response(),
-        Err(error) => ErrorHandler::handle_error(error)
-    }
+    user_service.delete_user(id).await?;
+    Ok(StatusCode::NO_CONTENT)
 }
 
-fn map_to_dtos(entities: Vec<User>) -> Vec<UserDto> {
-    entities.iter()
-        .map(|entity| entity.clone().to_dto())
+fn map_to_dtos(entities: Vec<User>) -> Json<Vec<UserDto>> {
+    Json(
+        entities.iter()
+        .map(|entity| entity.clone().into())
         .collect()
+    )
 }
