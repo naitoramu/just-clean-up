@@ -1,6 +1,6 @@
-use std::error::Error;
 use std::fmt;
 
+use axum::BoxError;
 use axum::http::StatusCode;
 use convert_case::{Case, Casing};
 use lazy_static::lazy_static;
@@ -17,12 +17,12 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum ProblemType {
-    InternalServerError(Box<dyn Error>),
+    InternalServerError(BoxError),
     ResourceNotFound,
     BadRequest,
     InvalidObjectId(bson::oid::Error),
-    AccessForbidden(Box<dyn Error>),
-    Unauthorized(Box<dyn Error>)
+    AccessForbidden(BoxError),
+    Unauthorized(BoxError)
 }
 
 impl ProblemType {

@@ -2,7 +2,9 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
+
 use mapper::user_mapper::UserMapper;
+
 use crate::entities::User;
 use crate::mapper;
 use crate::mapper::Mapper;
@@ -24,14 +26,17 @@ impl UserDto {
     pub fn into_response(self, status_code: StatusCode) -> Response {
         (status_code, Json(self)).into_response()
     }
+}
 
-    pub fn to_entity(self) -> User {
-        <dyn UserMapper>::map_to_entity(self)
+impl From<UserDto> for User {
+    fn from(value: UserDto) -> Self {
+        <dyn UserMapper>::map_to_entity(value)
+
     }
 }
 
-impl From<UserDto> for Response {
-    fn from(value: UserDto) -> Self {
-        Json(value).into_response()
+impl IntoResponse for UserDto {
+    fn into_response(self) -> Response {
+        Json(self).into_response()
     }
 }

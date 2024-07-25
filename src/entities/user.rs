@@ -21,9 +21,9 @@ pub struct User {
     pub password: String,
 }
 
-impl User {
-    pub fn to_dto(self) -> UserDto {
-        <dyn UserMapper>::map_to_dto(self)
+impl From<User> for UserDto {
+    fn from(entity: User) -> Self {
+        <dyn UserMapper>::map_to_dto(entity)
     }
 }
 

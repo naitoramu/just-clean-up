@@ -1,5 +1,3 @@
-use axum::Json;
-use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 
 use crate::entities::cleaning_plan::CleaningPlan;
@@ -40,12 +38,6 @@ pub struct DutyDto {
     pub offset: String,
 
     pub penalty: String
-}
-
-impl From<CleaningPlanDto> for Response {
-    fn from(value: CleaningPlanDto) -> Self {
-        Json(value).into_response()
-    }
 }
 
 impl From<CleaningPlanDto> for CleaningPlan {

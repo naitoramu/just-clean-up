@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::error::Error;
 
 use async_trait::async_trait;
+use axum::BoxError;
 use futures::TryStreamExt;
 use mongodb::bson::{doc, to_document};
 use mongodb::bson::oid::ObjectId;
@@ -25,7 +25,7 @@ where
         MongoRepository { collection: database.collection(T::get_collection_name()) }
     }
 
-    async fn get_by_object_id(&self, object_id: ObjectId) -> Result<Option<T>, Box<dyn Error>> {
+    async fn get_by_object_id(&self, object_id: ObjectId) -> Result<Option<T>, BoxError> {
         match self.collection.find_one(doc! { "_id": object_id }).await {
             Ok(entity) => Ok(entity),
             Err(error) => Err(error.into())
@@ -38,14 +38,14 @@ impl<T> FilterRepository<T> for MongoRepository<T>
 where
     T: Entity,
 {
-    async fn find_first_matching(&self, filter: HashMap<&str, String>) -> Result<Option<T>, Box<dyn Error>> {
+    async fn find_first_matching(&self, filter: HashMap<&str, String>) -> Result<Option<T>, BoxError> {
         match self.collection.find_one(to_document(&filter).unwrap()).await {
             Ok(entity) => Ok(entity),
             Err(error) => Err(error.into())
         }
     }
 
-    async fn find_all_matching(&self, filter: HashMap<&str, String>) -> Result<Vec<T>, Box<dyn Error>> {
+    async fn find_all_matching(&self, filter: HashMap<&str, String>) -> Result<Vec<T>, BoxError> {
         match self.collection.find(to_document(&filter).unwrap()).await {
             Ok(entities) => Ok(entities.try_collect().await.unwrap()),
             Err(error) => Err(error.into())
@@ -58,19 +58,19 @@ impl<T> CrudRepository<T> for MongoRepository<T>
 where
     T: Entity,
 {
-    async fn get_all(&self) -> Result<Vec<T>, Box<dyn Error>> {
+    async fn get_all(&self) -> Result<Vec<T>, BoxError> {
         match self.collection.find(doc! {}).await {
             Ok(entities) => Ok(entities.try_collect().await.unwrap()),
             Err(error) => Err(error.into())
         }
     }
 
-    async fn get_by_id(&self, id: String) -> Result<Option<T>, Box<dyn Error>> {
+    async fn get_by_id(&self, id: String) -> Result<Option<T>, BoxError> {
         let object_id = ObjectIdMapper::map_to_object_id(id.as_str())?;
         self.get_by_object_id(object_id).await
     }
 
-    async fn create(&self, entity: &T) -> Result<T, Box<dyn Error>> {
+    async fn create(&self, entity: &T) -> Result<T, BoxError> {
         match self.collection.insert_one(entity).await {
             Ok(insert_result) => Ok(self.get_by_object_id(
                 insert_result.inserted_id.as_object_id().unwrap()
@@ -79,7 +79,7 @@ where
         }
     }
 
-    async fn update(&self, id: String, entity: &T) -> Result<T, Box<dyn Error>> {
+    async fn update(&self, id: String, entity: &T) -> Result<T, BoxError> {
         let object_id = ObjectIdMapper::map_to_object_id(id.as_str())?;
         self.get_by_object_id(object_id).await?;
 
@@ -94,7 +94,7 @@ where
         }
     }
 
-    async fn delete(&self, id: String) -> Result<(), Box<dyn Error>> {
+    async fn delete(&self, id: String) -> Result<(), BoxError> {
         let object_id = ObjectIdMapper::map_to_object_id(id.as_str())?;
         self.get_by_object_id(object_id).await?;
 

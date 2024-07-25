@@ -1,6 +1,6 @@
 use std::convert::AsRef;
 
-use axum::Json;
+use axum::{BoxError, Json};
 use axum::response::{IntoResponse, Response};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
@@ -15,9 +15,9 @@ pub struct JwtToken {
     pub access_token: String,
 }
 
-impl From<JwtToken> for Response {
-    fn from(value: JwtToken) -> Self {
-        Json(value).into_response()
+impl IntoResponse for JwtToken {
+    fn into_response(self) -> Response {
+       Json(self).into_response()
     }
 }
 
@@ -33,7 +33,7 @@ lazy_static! {
   static ref ENCODING_KEY: EncodingKey = EncodingKey::from_secret(AppConfig::get().token_secret.as_ref());static ref DECODING_KEY: DecodingKey = DecodingKey::from_secret(AppConfig::get().token_secret.as_ref());
 }
 
-pub fn generate_jwt(user_id: String) -> Result<JwtToken, Box<dyn std::error::Error>> {
+pub fn generate_jwt(user_id: String) -> Result<JwtToken, BoxError> {
     let now = Utc::now();
     let expire: chrono::TimeDelta = Duration::hours(24);
     let exp: usize = (now + expire).timestamp() as usize;
@@ -46,7 +46,7 @@ pub fn generate_jwt(user_id: String) -> Result<JwtToken, Box<dyn std::error::Err
     }
 }
 
-pub fn decode_jwt(jwt: JwtToken) -> Result<Claims, Box<dyn std::error::Error>> {
+pub fn decode_jwt(jwt: JwtToken) -> Result<Claims, BoxError> {
     match decode(&jwt.access_token, &DECODING_KEY, &Validation::default()) {
         Ok(token_data) => Ok(token_data.claims),
         Err(err) => Err(err.into())

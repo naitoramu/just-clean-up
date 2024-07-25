@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use axum::{http::StatusCode, Json, response::{IntoResponse, Response}};
+use axum::{BoxError, http::StatusCode, Json, response::{IntoResponse, Response}};
 use serde::{Serialize, Serializer};
 
 use crate::config::AppConfig;
+use crate::error::error_handler::ErrorHandler;
 use crate::error::problem_type::ProblemType;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct JsonProblem {
     #[serde(serialize_with = "serialize_status_code")]
     status: StatusCode,
@@ -52,6 +54,12 @@ impl fmt::Display for JsonProblem {
     }
 }
 
+impl IntoResponse for JsonProblem {
+    fn into_response(self) -> Response {
+        (self.status, Json(self)).into_response()
+    }
+}
+
 impl From<JsonProblem> for Response {
     fn from(error: JsonProblem) -> Self {
         (error.status, Json(error)).into_response()
@@ -64,10 +72,18 @@ impl From<&JsonProblem> for Response {
     }
 }
 
+impl From<BoxError> for JsonProblem {
+    fn from(value: BoxError) -> Self {
+        ErrorHandler::map_error(value)
+    }
+}
+
 impl std::error::Error for JsonProblem {}
 
-fn serialize_status_code<S>(status_code: &StatusCode, s: S) -> Result<S::Ok, S::Error>
-where
+fn serialize_status_code<S>(
+    status_code: &StatusCode,
+    s: S,
+) -> Result<S::Ok, S::Error> where
     S: Serializer,
 {
     s.serialize_u16(status_code.as_u16())

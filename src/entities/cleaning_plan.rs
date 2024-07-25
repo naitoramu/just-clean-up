@@ -1,4 +1,3 @@
-use axum::response::Response;
 use mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
 use serde::{Deserialize, Serialize};
 
@@ -40,13 +39,6 @@ impl CleaningPlan {
     }
 }
 
-impl From<CleaningPlan> for Response {
-    fn from(value: CleaningPlan) -> Self {
-        let dto: CleaningPlanDto = value.into();
-        dto.into()
-    }
-}
-
 impl From<CleaningPlan> for CleaningPlanDto {
     fn from(entity: CleaningPlan) -> Self {
         <dyn CleaningPlanMapper>::map_to_dto(entity)
@@ -59,6 +51,6 @@ impl Entity for CleaningPlan {
     }
 
     fn get_collection_name() -> &'static str {
-        "cleaning-plans"
+        "cleaning_plans"
     }
 }

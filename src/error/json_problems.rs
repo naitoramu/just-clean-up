@@ -1,11 +1,13 @@
 use std::collections::HashMap;
-
+use axum::BoxError;
 use mongodb::bson::oid::Error;
 
 use crate::error::json_problem::JsonProblem;
 use crate::error::problem_type::ProblemType;
+use crate::error::problem_type::ProblemType::InternalServerError;
 
 pub struct JsonProblems;
+
 impl JsonProblems {
 
     pub fn resource_not_found(resource_type: &str, id: String) -> JsonProblem {
@@ -29,11 +31,15 @@ impl JsonProblems {
         JsonProblem::from_type(ProblemType::InvalidObjectId(oid_error.clone())).with_properties(properties)
     }
 
-    pub fn forbidden(error: Box<dyn std::error::Error>) -> JsonProblem {
+    pub fn forbidden(error: BoxError) -> JsonProblem {
         JsonProblem::from_type(ProblemType::AccessForbidden(error))
     }
 
-    pub fn unauthorized(error: Box<dyn std::error::Error>) -> JsonProblem {
+    pub fn unauthorized(error: BoxError) -> JsonProblem {
         JsonProblem::from_type(ProblemType::AccessForbidden(error))
+    }
+
+    pub fn internal_server_error(error: BoxError) -> JsonProblem {
+        JsonProblem::from_type(InternalServerError(error))
     }
 }
