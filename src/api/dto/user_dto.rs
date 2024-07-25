@@ -1,4 +1,3 @@
-use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
@@ -20,12 +19,6 @@ pub struct UserDto {
     pub email: String,
 
     pub password: String,
-}
-
-impl UserDto {
-    pub fn into_response(self, status_code: StatusCode) -> Response {
-        (status_code, Json(self)).into_response()
-    }
 }
 
 impl From<UserDto> for User {

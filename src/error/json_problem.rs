@@ -60,18 +60,6 @@ impl IntoResponse for JsonProblem {
     }
 }
 
-impl From<JsonProblem> for Response {
-    fn from(error: JsonProblem) -> Self {
-        (error.status, Json(error)).into_response()
-    }
-}
-
-impl From<&JsonProblem> for Response {
-    fn from(error: &JsonProblem) -> Self {
-        (error.status, Json(error)).into_response()
-    }
-}
-
 impl From<BoxError> for JsonProblem {
     fn from(value: BoxError) -> Self {
         ErrorHandler::map_error(value)

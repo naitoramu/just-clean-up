@@ -36,7 +36,7 @@ impl JsonProblems {
     }
 
     pub fn unauthorized(error: BoxError) -> JsonProblem {
-        JsonProblem::from_type(ProblemType::AccessForbidden(error))
+        JsonProblem::from_type(ProblemType::Unauthorized(error))
     }
 
     pub fn internal_server_error(error: BoxError) -> JsonProblem {

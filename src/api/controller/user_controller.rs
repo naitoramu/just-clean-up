@@ -11,7 +11,6 @@ use crate::domain::service::user_service::UserService;
 use crate::entities::{Entity, User};
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
-use crate::repositories::crud_repository::CrudRepository;
 
 pub fn routes(db: &Database) -> Router {
     let user_service = Arc::new(UserService::new(db.get_repository::<User>()));

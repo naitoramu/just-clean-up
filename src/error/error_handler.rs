@@ -1,19 +1,16 @@
-use std::error::Error;
-
 use axum::BoxError;
-use axum::response::{IntoResponse, Response};
+use axum::response::IntoResponse;
 use log::{debug, error};
 use mongodb::bson;
 
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
-use crate::error::problem_type::ProblemType;
 
 pub struct ErrorHandler;
 
 impl ErrorHandler {
 
-    pub fn handle_error(error: BoxError) -> Response {
+    pub fn handle_error(error: BoxError) -> impl IntoResponse {
         Self::map_error(error).into_response()
     }
 
@@ -31,7 +28,7 @@ impl ErrorHandler {
 
         } else {
             error!("Error: {}", error.to_string());
-            JsonProblem::from_type(ProblemType::InternalServerError(error))
+            JsonProblems::internal_server_error(error)
         }
     }
 }
