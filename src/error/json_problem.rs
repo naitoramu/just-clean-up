@@ -5,7 +5,7 @@ use axum::{BoxError, http::StatusCode, Json, response::{IntoResponse, Response}}
 use serde::{Serialize, Serializer};
 
 use crate::config::AppConfig;
-use crate::error::error_handler::ErrorHandler;
+use crate::error::error_mapper::ErrorMapper;
 use crate::error::problem_type::ProblemType;
 
 #[derive(Debug, Serialize, Clone)]
@@ -62,7 +62,7 @@ impl IntoResponse for JsonProblem {
 
 impl From<BoxError> for JsonProblem {
     fn from(value: BoxError) -> Self {
-        ErrorHandler::map_error(value)
+        ErrorMapper::map_error_to_json_problem(value)
     }
 }
 

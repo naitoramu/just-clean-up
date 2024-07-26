@@ -4,7 +4,7 @@ use toml::{from_str, Value};
 
 pub mod json_problem;
 mod problem_type;
-pub mod error_handler;
+pub mod error_mapper;
 pub mod json_problems;
 
 lazy_static! {

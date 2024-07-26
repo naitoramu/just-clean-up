@@ -6,6 +6,7 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 
 use crate::entities::User;
+use crate::error::error_mapper::ErrorMapper;
 use crate::error::json_problems::JsonProblems;
 use crate::jwt::{decode_jwt, JwtToken};
 use crate::repositories::crud_repository::CrudRepository;
@@ -37,4 +38,17 @@ pub async fn authorization_middleware(
 
     req.extensions_mut().insert(current_user);
     next.run(req).await
+}
+
+pub async fn error_handling_middleware(
+    req: Request<Body>,
+    next: Next,
+) -> Response {
+    let response = next.run(req).await;
+
+    if response.status().as_u16() < 400 {
+        return response
+    }
+
+    ErrorMapper::map_response_to_json_problem_response(response)
 }
