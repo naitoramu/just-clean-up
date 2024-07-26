@@ -44,7 +44,7 @@ async fn login_user(
         Some(user) => jwt::generate_jwt(user.id)
             .map(Json::from)
             .map_err(Into::into),
-        None => Err(JsonProblems::unauthorized("Invalid credentials".into())),
+        None => Err(JsonProblems::unauthorized(Some("Invalid credentials"), None)),
     }
 }
 

@@ -12,6 +12,7 @@ async-trait = "0.1.81"
 tokio = { version = "1.39.1", features = ["full"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_valid = "0.24.0"
+serde_json = "1.0.120"
 sqlx = { version = "0.8.0", features = [ "mysql", "macros", "runtime-async-std", "tls-rustls", "time" ] }
 mongodb = "3.0.1"
 dotenv = "0.15.0"

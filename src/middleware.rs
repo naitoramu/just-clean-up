@@ -20,20 +20,20 @@ pub async fn authorization_middleware(
     let auth_header = match auth_header {
         Some(header) => match header.to_str() {
             Ok(header) => header,
-            Err(err) =>  return JsonProblems::forbidden(err.into()).into_response()
+            Err(err) =>  return JsonProblems::unauthorized(None, Some(err.into())).into_response()
         },
-        None => return JsonProblems::forbidden("Missing auth header".into()).into_response()
+        None => return JsonProblems::unauthorized(Some("Missing authorization header"), None).into_response()
     };
     let mut header = auth_header.split_whitespace();
     let (_, token) = (header.next(), header.next());
     let token_data = match decode_jwt(JwtToken { access_token: token.unwrap().to_string() }) {
         Ok(claims) => claims,
-        Err(err) => return JsonProblems::unauthorized(err).into_response()
+        Err(err) => return JsonProblems::unauthorized(None, Some(err)).into_response()
     };
     // Fetch the user details from the database
     let current_user = match user_repository.get_by_id(token_data.user_id).await {
         Ok(user) => user,
-        Err(err) => return JsonProblems::unauthorized(err).into_response(),
+        Err(err) => return JsonProblems::unauthorized(None, Some(err)).into_response(),
     };
 
     req.extensions_mut().insert(current_user);
@@ -50,5 +50,5 @@ pub async fn error_handling_middleware(
         return response
     }
 
-    ErrorMapper::map_response_to_json_problem_response(response)
+    ErrorMapper::map_response_to_json_problem_response(response).await
 }

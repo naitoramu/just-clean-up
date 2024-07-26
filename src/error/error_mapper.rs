@@ -1,4 +1,4 @@
-use axum::body::Body;
+use axum::body::{Body, to_bytes};
 use axum::BoxError;
 use axum::extract::rejection::JsonRejection;
 use axum::http::StatusCode;
@@ -12,19 +12,6 @@ use crate::error::json_problems::JsonProblems;
 pub struct ErrorMapper;
 
 impl ErrorMapper {
-
-    pub fn map_response_to_json_problem_response(response: Response) -> Response {
-        match response.status() {
-            StatusCode::METHOD_NOT_ALLOWED => JsonProblems::method_not_allowed().into_response(),
-            StatusCode::UNPROCESSABLE_ENTITY => Self::map_unprocessable_entity(response.body()).into_response(),
-            _ => response
-        }
-    }
-
-    fn map_unprocessable_entity(body: &Body) -> JsonProblem {
-        //TODO: add real mapping
-        JsonProblems::bad_request()
-    }
 
     pub fn map_error_to_json_problem(error: BoxError) -> JsonProblem {
         if error.is::<JsonProblem>() {
@@ -45,6 +32,36 @@ impl ErrorMapper {
         } else {
             error!("Error: {}", error.to_string());
             JsonProblems::internal_server_error(error)
+        }
+    }
+
+    pub async fn map_response_to_json_problem_response(response: Response) -> Response {
+
+        let (parts, body) = response.into_parts();
+        let response_body = if let Ok(body_bytes) = to_bytes(body, usize::MAX).await {
+            String::from_utf8_lossy(&body_bytes).to_string()
+        } else {
+            "Failed to read response body".to_string()
+        };
+
+        if parts.status.eq(&StatusCode::METHOD_NOT_ALLOWED) {
+            return JsonProblems::method_not_allowed().into_response()
+
+        }
+
+        if Self::is_not_json_problem(response_body.clone()) {
+            if parts.status.eq(&StatusCode::BAD_REQUEST) || parts.status.eq(&StatusCode::UNPROCESSABLE_ENTITY) {
+               return JsonProblems::bad_request(response_body).into_response();
+            }
+        }
+
+        Response::from_parts(parts, Body::from(response_body))
+    }
+
+    fn is_not_json_problem(response_body: String) -> bool {
+        match serde_json::from_str::<JsonProblem>(response_body.as_str()) {
+            Ok(_) => false,
+            Err(_) => true
         }
     }
 }
