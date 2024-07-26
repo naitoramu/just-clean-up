@@ -22,7 +22,8 @@ pub enum ProblemType {
     BadRequest,
     InvalidObjectId(bson::oid::Error),
     AccessForbidden(BoxError),
-    Unauthorized(BoxError)
+    Unauthorized(BoxError),
+    MethodNotAllowed,
 }
 
 impl ProblemType {
@@ -42,6 +43,7 @@ impl ProblemType {
             ProblemType::AccessForbidden(_) => StatusCode::FORBIDDEN,
 
             ProblemType::Unauthorized(_) => StatusCode::UNAUTHORIZED,
+            ProblemType::MethodNotAllowed => StatusCode::METHOD_NOT_ALLOWED,
 
             ProblemType::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
@@ -72,6 +74,7 @@ impl ProblemType {
             ProblemType::InvalidObjectId(error) => Some(error.to_string()),
 
             ProblemType::BadRequest |
+            ProblemType::MethodNotAllowed |
             ProblemType::ResourceNotFound => None,
         }
     }

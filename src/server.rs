@@ -1,11 +1,13 @@
 use std::net::SocketAddr;
 
-use axum::{middleware, Router};
+use axum::middleware::from_fn;
+use axum::Router;
 use log::{debug, info};
+
 use crate::api::controller::{auth_controller, cleaning_plan_controller, health_controller, user_controller};
-use crate::auth_middleware;
 use crate::database::database::Database;
 use crate::entities::User;
+use crate::middleware;
 
 pub struct Server;
 
@@ -15,9 +17,9 @@ impl Server {
         debug!("Database connection established");
 
 
-        let auth_middleware = middleware::from_fn_with_state(
+        let auth_middleware = axum::middleware::from_fn_with_state(
             db.get_repository::<User>(),
-            auth_middleware::authorization_middleware
+            middleware::authorization_middleware,
         );
 
         let app = Router::new()
@@ -30,7 +32,7 @@ impl Server {
                     .merge(cleaning_plan_controller::routes(&db))
                     .layer(auth_middleware),
                 ),
-            );
+            ).layer(from_fn(middleware::error_handling_middleware));
 
         let addr = SocketAddr::from(([127, 0, 0, 1], port));
 

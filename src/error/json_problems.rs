@@ -1,12 +1,15 @@
 use std::collections::HashMap;
+
 use axum::BoxError;
 use mongodb::bson::oid::Error;
 
 use crate::error::json_problem::JsonProblem;
 use crate::error::problem_type::ProblemType;
-use crate::error::problem_type::ProblemType::InternalServerError;
 
 pub struct JsonProblems;
+
+impl JsonProblems {
+}
 
 impl JsonProblems {
 
@@ -39,7 +42,14 @@ impl JsonProblems {
         JsonProblem::from_type(ProblemType::Unauthorized(error))
     }
 
+    pub fn method_not_allowed() -> JsonProblem {
+        JsonProblem::from_type(ProblemType::MethodNotAllowed)
+    }
+    pub fn bad_request() -> JsonProblem {
+       JsonProblem::from_type(ProblemType::BadRequest)
+    }
+
     pub fn internal_server_error(error: BoxError) -> JsonProblem {
-        JsonProblem::from_type(InternalServerError(error))
+        JsonProblem::from_type(ProblemType::InternalServerError(error))
     }
 }
