@@ -1,17 +1,18 @@
+use std::{fmt, u16};
 use std::collections::HashMap;
-use std::fmt;
 
 use axum::{BoxError, http::StatusCode, Json, response::{IntoResponse, Response}};
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::config::AppConfig;
 use crate::error::error_mapper::ErrorMapper;
 use crate::error::problem_type::ProblemType;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct JsonProblem {
     #[serde(serialize_with = "serialize_status_code")]
+    #[serde(deserialize_with = "deserialize_status_code")]
     status: StatusCode,
 
     title: String,
@@ -75,6 +76,15 @@ fn serialize_status_code<S>(
     S: Serializer,
 {
     s.serialize_u16(status_code.as_u16())
+}
+
+fn deserialize_status_code<'de, D>(deserializer: D) -> Result<StatusCode, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let status_code = u16::deserialize(deserializer)?;
+    StatusCode::from_u16(status_code)
+        .map_err(serde::de::Error::custom)
 }
 
 fn skip_internal_error_serialization(internal_error: &Option<String>) -> bool {

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use axum::BoxError;
 use mongodb::bson::oid::Error;
-
 use crate::error::json_problem::JsonProblem;
 use crate::error::problem_type::ProblemType;
 
@@ -38,15 +37,29 @@ impl JsonProblems {
         JsonProblem::from_type(ProblemType::AccessForbidden(error))
     }
 
-    pub fn unauthorized(error: BoxError) -> JsonProblem {
-        JsonProblem::from_type(ProblemType::Unauthorized(error))
+    pub fn unauthorized(message: Option<&str>, error: Option<BoxError>) -> JsonProblem {
+
+        let json_problem = match error {
+            Some(err) => JsonProblem::from_type(ProblemType::Unauthorized(err)),
+            None => JsonProblem::from_type(ProblemType::Unauthorized("".into()))
+        };
+
+        let properties = match message {
+            Some(msg) => HashMap::from([("message", msg.to_string())]),
+            None => HashMap::default()
+        };
+
+        json_problem.with_properties(properties)
     }
 
     pub fn method_not_allowed() -> JsonProblem {
         JsonProblem::from_type(ProblemType::MethodNotAllowed)
     }
-    pub fn bad_request() -> JsonProblem {
-       JsonProblem::from_type(ProblemType::BadRequest)
+
+    pub fn bad_request(message: String) -> JsonProblem {
+       JsonProblem::from_type(ProblemType::BadRequest).with_properties(HashMap::from([
+           ("message", message)
+       ]))
     }
 
     pub fn internal_server_error(error: BoxError) -> JsonProblem {
