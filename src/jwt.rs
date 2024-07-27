@@ -2,7 +2,6 @@ use std::convert::AsRef;
 
 use axum::{BoxError, Json};
 use axum::response::{IntoResponse, Response};
-use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, Validation};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -17,36 +16,33 @@ pub struct JwtToken {
 
 impl IntoResponse for JwtToken {
     fn into_response(self) -> Response {
-       Json(self).into_response()
+        Json(self).into_response()
     }
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Claims {
+pub struct JwtClaims {
     pub exp: usize,
     pub iat: usize,
     pub user_id: String,
 }
 
 lazy_static! {
-  static ref ENCODING_KEY: EncodingKey = EncodingKey::from_secret(AppConfig::get().token_secret.as_ref());static ref DECODING_KEY: DecodingKey = DecodingKey::from_secret(AppConfig::get().token_secret.as_ref());
+    static ref ENCODING_KEY: EncodingKey = EncodingKey::from_secret(AppConfig::get().token_secret.as_ref());
+    static ref DECODING_KEY: DecodingKey = DecodingKey::from_secret(AppConfig::get().token_secret.as_ref());
 }
 
-pub fn generate_jwt(user_id: String) -> Result<JwtToken, BoxError> {
-    let now = Utc::now();
-    let expire: chrono::TimeDelta = Duration::hours(24);
-    let exp: usize = (now + expire).timestamp() as usize;
-    let iat: usize = now.timestamp() as usize;
-    let claim = Claims { iat, exp, user_id };
+pub fn generate_json_web_token(claims: JwtClaims) -> Result<JwtToken, BoxError> {
 
-    match encode(&Header::default(), &claim, &ENCODING_KEY) {
+    match encode(&Header::default(), &claims, &ENCODING_KEY) {
         Ok(token) => Ok(JwtToken { access_token: token }),
         Err(err) => Err(err.into())
     }
 }
 
-pub fn decode_jwt(jwt: JwtToken) -> Result<Claims, BoxError> {
+pub fn decode_jwt(jwt: JwtToken) -> Result<JwtClaims, BoxError> {
+
     match decode(&jwt.access_token, &DECODING_KEY, &Validation::default()) {
         Ok(token_data) => Ok(token_data.claims),
         Err(err) => Err(err.into())
