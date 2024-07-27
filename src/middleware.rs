@@ -32,7 +32,8 @@ pub async fn authorization_middleware(
     };
     // Fetch the user details from the database
     let current_user = match user_repository.get_by_id(token_data.user_id).await {
-        Ok(user) => user,
+        Ok(Some(user)) => user,
+        Ok(None) => return JsonProblems::unauthorized(None, None).into_response(),
         Err(err) => return JsonProblems::unauthorized(None, Some(err)).into_response(),
     };
 
