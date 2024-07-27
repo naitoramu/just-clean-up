@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
@@ -28,17 +28,19 @@ pub fn routes(db: &Database) -> Router {
 }
 
 async fn get_cleaning_plan(
+    Extension(user): Extension<User>,
     Path(id): Path<String>,
     State(service): State<Arc<CleaningPlanService>>,
 ) -> Result<Json<CleaningPlanDto>, JsonProblem> {
 
-    match service.get_cleaning_plan_by_id(id.clone()).await? {
+    match service.get_cleaning_plan_if_user_is_assigned_to_it(id.clone(), user.id).await? {
         Some(plan) => Ok(Json(plan.into())),
         None => Err(JsonProblems::resource_not_found(CleaningPlan::get_resource_name(), id))
     }
 }
 
 async fn create_cleaning_plan(
+    Extension(user): Extension<User>,
     State(service): State<Arc<CleaningPlanService>>,
     Json(body): Json<CleaningPlanDto>,
 ) -> Result<(StatusCode, Json<CleaningPlanDto>), JsonProblem> {
@@ -48,6 +50,7 @@ async fn create_cleaning_plan(
 }
 
 async fn update_cleaning_plan(
+    Extension(user): Extension<User>,
     Path(id): Path<String>,
     State(service): State<Arc<CleaningPlanService>>,
     Json(body): Json<CleaningPlanDto>,
@@ -58,10 +61,11 @@ async fn update_cleaning_plan(
 }
 
 async fn delete_cleaning_plan(
+    Extension(user): Extension<User>,
     Path(id): Path<String>,
     State(service): State<Arc<CleaningPlanService>>,
 ) -> Result<StatusCode, JsonProblem> {
 
-    service.delete_cleaning_plan(id).await?;
+    service.delete_cleaning_plan_if_user_is_assigned_to_it(id, user.id).await?;
     Ok(StatusCode::NO_CONTENT)
 }

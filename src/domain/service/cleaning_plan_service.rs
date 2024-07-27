@@ -11,7 +11,6 @@ pub struct CleaningPlanService {
 }
 
 impl CleaningPlanService {
-
     pub fn new(
         user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
         cleaning_plan_repository: Arc<dyn CrudRepository<CleaningPlan> + Send + Sync>,
@@ -19,19 +18,48 @@ impl CleaningPlanService {
         CleaningPlanService { user_repository, cleaning_plan_repository }
     }
 
-    pub async fn get_cleaning_plan_by_id(&self, id: String) -> Result<Option<CleaningPlan>, JsonProblem> {
-        self.cleaning_plan_repository.get_by_id(id.clone()).await.map_err(Into::into)
+    pub async fn get_cleaning_plan_if_user_is_assigned_to_it(
+        &self,
+        plan_id: String,
+        user_id: String,
+    ) -> Result<Option<CleaningPlan>, JsonProblem> {
+
+        let maybe_plan = self.cleaning_plan_repository
+            .get_by_id(plan_id.clone())
+            .await
+            .map_err(Into::<JsonProblem>::into)?;
+
+        if let Some(plan) = maybe_plan {
+            if plan.cleaner_ids.contains(&user_id) {
+                return Ok(Some(plan))
+            }
+        }
+
+        Ok(None)
     }
 
-    pub async fn create_cleaning_plan(&self, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, JsonProblem> {
+    pub async fn create_cleaning_plan(
+        &self,
+        cleaning_plan: &CleaningPlan,
+    ) -> Result<CleaningPlan, JsonProblem> {
         self.cleaning_plan_repository.create(cleaning_plan).await.map_err(Into::into)
     }
 
-    pub async fn update_cleaning_plan(&self, id: String, cleaning_plan: &CleaningPlan) -> Result<CleaningPlan, JsonProblem> {
+    pub async fn update_cleaning_plan(
+        &self,
+        id: String,
+        cleaning_plan: &CleaningPlan,
+    ) -> Result<CleaningPlan, JsonProblem> {
         self.cleaning_plan_repository.update(id, cleaning_plan).await.map_err(Into::into)
     }
 
-    pub async fn delete_cleaning_plan(&self, id: String) -> Result<(), JsonProblem> {
-        self.cleaning_plan_repository.delete(id).await.map_err(Into::into)
+    pub async fn delete_cleaning_plan_if_user_is_assigned_to_it(
+        &self,
+        plan_id: String,
+        user_id: String
+    ) -> Result<(), JsonProblem> {
+
+        self.get_cleaning_plan_if_user_is_assigned_to_it(plan_id.clone(), user_id).await?;
+        self.cleaning_plan_repository.delete(plan_id).await.map_err(Into::into)
     }
 }
