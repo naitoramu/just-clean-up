@@ -25,8 +25,12 @@ pub async fn authorization_middleware(
         None => return JsonProblems::unauthorized(Some("Missing authorization header"), None).into_response()
     };
     let mut header = auth_header.split_whitespace();
-    let (_, token) = (header.next(), header.next());
-    let token_data = match decode_jwt(JwtToken { access_token: token.unwrap().to_string() }) {
+    let (_, header_value) = (header.next(), header.next());
+    let token = match header_value {
+        Some(value) => value,
+        None => return JsonProblems::unauthorized(Some("Authorization header is empty"), None).into_response()
+    };
+    let token_data = match decode_jwt(JwtToken { access_token: token.to_string() }) {
         Ok(claims) => claims,
         Err(err) => return JsonProblems::unauthorized(None, Some(err)).into_response()
     };
