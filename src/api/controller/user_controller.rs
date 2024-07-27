@@ -12,14 +12,20 @@ use crate::entities::{Entity, User};
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 
-pub fn routes(db: &Database) -> Router {
+pub fn private_routes(db: &Database) -> Router {
     let user_service = Arc::new(UserService::new(db.get_repository::<User>()));
     Router::new()
         .route("/users", get(get_users))
-        .route("/users", post(create_user))
         .route("/users/:id", get(get_user))
         .route("/users/:id", put(update_user))
         .route("/users/:id", delete(delete_user))
+        .with_state(user_service)
+}
+
+pub fn public_routes(db: &Database) -> Router {
+    let user_service = Arc::new(UserService::new(db.get_repository::<User>()));
+    Router::new()
+        .route("/register", post(create_user))
         .with_state(user_service)
 }
 

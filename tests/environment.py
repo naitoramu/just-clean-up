@@ -57,6 +57,8 @@ def after_all(context):
 
 
 def before_scenario(context, scenario):
+    context.request_body = None
+    context.auth_token = None
     client = pymongo.MongoClient(context.mongo_url)
     db = client["just-clean-up"]
 
