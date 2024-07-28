@@ -1,0 +1,24 @@
+name: Build Rust project, run unit and integration tests
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --release --verbose
+    - name: Run unit tests
+      run: cargo test --verbose
+    - name: Run integration tests
+      run: behave tets
