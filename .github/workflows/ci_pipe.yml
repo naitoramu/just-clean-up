@@ -22,7 +22,7 @@ jobs:
       with:
         python-version: '3.12'
     - name: Setup Python
-      run: pip install requests behave
+      run: pip install requests behave pymongo
     - name: Build
       run: cargo build --release --verbose
     - name: Run unit tests
