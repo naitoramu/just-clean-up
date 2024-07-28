@@ -9,9 +9,9 @@ pub struct JsonProblems;
 impl JsonProblems {
 
     pub fn resource_not_found(resource_type: &str, resource_id: String) -> JsonProblem {
-        let detail = format!("Cannot find ${resource_type} with id '${resource_id}'");
-
-        JsonProblem::from_type(&ResourceNotFound::new())
+        JsonProblem::from_type(&ResourceNotFound::new()).with_detail(
+            format!("Cannot find ${resource_type} with id '${resource_id}'")
+        )
     }
 
     pub fn invalid_object_id(oid_error: &Error) -> JsonProblem {
@@ -21,8 +21,9 @@ impl JsonProblems {
             _ => ""
         }.to_string();
 
-        let detail = format!("Provided ID '${hex_value}' is not valid ObjectID value");
-        JsonProblem::from_type(&BadRequest::new())
+        JsonProblem::from_type(&BadRequest::new()).with_detail(
+            format!("Provided ID '${hex_value}' is not valid ObjectID value")
+        )
     }
 
     pub fn forbidden() -> JsonProblem {
@@ -30,19 +31,19 @@ impl JsonProblems {
     }
 
     pub fn unauthorized(detail: String) -> JsonProblem {
-        JsonProblem::from_type(&Unauthorized::new())
+        JsonProblem::from_type(&Unauthorized::new()).with_detail(detail)
     }
 
     pub fn method_not_allowed() -> JsonProblem {
         JsonProblem::from_type(&MethodNotAllowed::new())
     }
 
-    pub fn bad_request(message: String) -> JsonProblem {
-       JsonProblem::from_type(&BadRequest::new())
+    pub fn bad_request(detail: String) -> JsonProblem {
+       JsonProblem::from_type(&BadRequest::new()).with_detail(detail)
     }
 
     pub fn unprocessable_entity(detail: String) -> JsonProblem {
-        JsonProblem::from_type(&UnprocessableEntity::new())
+        JsonProblem::from_type(&UnprocessableEntity::new()).with_detail(detail)
     }
 
     pub fn internal_server_error(error: BoxError) -> JsonProblem {
