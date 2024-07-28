@@ -18,14 +18,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Setup Python
-      uses: actions/setup-python@v5
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - run: pip install requests behave
+    - name: Setup Python
+      run: pip install requests behave
     - name: Build
       run: cargo build --release --verbose
     - name: Run unit tests
       run: cargo test --verbose
     - name: Run integration tests
-      run: behave tets
+      run: behave test
