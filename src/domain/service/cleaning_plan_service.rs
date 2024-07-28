@@ -69,7 +69,7 @@ impl CleaningPlanService {
     async fn validate_users_exists(&self, user_ids: Vec<String>) -> Result<(), JsonProblem> {
         for user_id in user_ids {
             if self.user_repository.get_by_id(user_id.clone()).await?.is_none() {
-                return Err(JsonProblems::unrpocessable_entity(format!("User '{user_id}' does not exist")))
+                return Err(JsonProblems::unprocessable_entity(format!("User '{user_id}' does not exist")))
             }
         }
         Ok(())

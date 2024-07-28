@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use toml::{from_str, Value};
 
 pub mod json_problem;
-mod problem_type;
+mod http_error;
 pub mod error_mapper;
 pub mod json_problems;
 

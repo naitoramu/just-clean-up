@@ -6,7 +6,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::config::AppConfig;
 use crate::error::error_mapper::ErrorMapper;
-use crate::error::problem_type::ProblemType;
+use crate::error::http_error::HttpError;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -28,12 +28,12 @@ impl JsonProblem {
         Self { status, title, detail, internal_error }
     }
 
-    pub fn from_type(error_type: ProblemType) -> JsonProblem {
+    pub fn from_type(http_error: &impl HttpError) -> JsonProblem {
         JsonProblem::new(
-            error_type.get_status_code(),
-            error_type.get_title(),
-            error_type.get_detail(),
-            error_type.get_internal_error(),
+            http_error.status_code(),
+            http_error.title(),
+            http_error.detail(),
+            http_error.internal_message()
         )
     }
 
