@@ -28,11 +28,11 @@ impl AppConfig {
 
     fn new() -> Self {
         Self {
-            port: EnvVariable::new("PORT").as_u16(),
-            base_path: EnvVariable::new("BASE_PATH").as_string(),
-            development_mode: EnvVariable::new("DEV_MODE").as_bool(),
-            db_url: EnvVariable::new("DATABASE_URL").as_string(),
-            token_secret: EnvVariable::new("JWT_SECRET").as_string(),
+            port: EnvVariable::required("PORT").as_u16(),
+            base_path: EnvVariable::required("BASE_PATH").as_string(),
+            development_mode: EnvVariable::or_default("DEV_MODE", "false").as_bool(),
+            db_url: EnvVariable::required("DATABASE_URL").as_string(),
+            token_secret: EnvVariable::required("JWT_SECRET").as_string(),
         }
     }
 }
@@ -43,11 +43,19 @@ struct EnvVariable {
 }
 
 impl EnvVariable {
-    fn new(var_name: &str) -> Self {
+    fn required(var_name: &str) -> Self {
         EnvVariable {
             var_name: var_name.to_string(),
             string_value: env::var(var_name)
                 .expect(format!("Cannot read environment variable '{var_name}'").as_str())
+        }
+    }
+
+    fn or_default(var_name: &str, default: &str) -> Self {
+        EnvVariable {
+            var_name: var_name.to_string(),
+            string_value: env::var(var_name)
+                .unwrap_or(default.to_string())
         }
     }
 
