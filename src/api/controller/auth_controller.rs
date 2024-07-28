@@ -41,7 +41,7 @@ async fn login_user(
 
     match auth_service.get_user_by_email_and_password(email, password).await? {
         Some(user) => Ok(Json(auth_service.create_jwt_for_user(user.id)?)),
-        None => Err(JsonProblems::unauthorized(Some("Invalid credentials"), None)),
+        None => Err(JsonProblems::unauthorized("Invalid credentials".to_string())),
     }
 }
 

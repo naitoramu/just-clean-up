@@ -59,9 +59,9 @@ fn extract_auth_header(auth_header: Option<&HeaderValue>) -> Result<&str, JsonPr
     Ok(match auth_header {
         Some(header) => match header.to_str() {
             Ok(header) => header,
-            Err(err) => return Err(JsonProblems::unauthorized(Some("Invalid authorization header"), Some(err.into())))
+            Err(err) => return Err(JsonProblems::unauthorized("Invalid authorization header".to_string()))
         },
-        None => return Err(JsonProblems::unauthorized(Some("Missing authorization header"), None))
+        None => return Err(JsonProblems::unauthorized("Missing authorization header".to_string()))
     })
 }
 
@@ -70,21 +70,24 @@ fn extract_bearer_token(auth_header: &str) -> Result<String, JsonProblem> {
     let (_, header_value) = (header.next(), header.next());
     match header_value {
         Some(token) => Ok(token.to_string()),
-        None => Err(JsonProblems::unauthorized(Some("Missing Bearer token"), None))
+        None => Err(JsonProblems::unauthorized("Missing Bearer token".to_string()))
     }
 }
 
 fn decode_token(token: String) -> Result<JwtClaims, JsonProblem> {
     match decode_jwt(JwtToken { access_token: token }) {
         Ok(claims) => Ok(claims),
-        Err(err) => Err(JsonProblems::unauthorized(Some("Failed to decode JWT token"), Some(err)))
+        Err(err) => Err(JsonProblems::unauthorized("Failed to decode JWT token".to_string()))
     }
 }
 
-async fn get_user_by_jwt_claims(jwt_claims: JwtClaims, user_repository: Arc<dyn CrudRepository<User>>) -> Result<User, JsonProblem> {
+async fn get_user_by_jwt_claims(
+    jwt_claims: JwtClaims,
+    user_repository: Arc<dyn CrudRepository<User>>
+) -> Result<User, JsonProblem> {
     match user_repository.get_by_id(jwt_claims.user_id).await {
         Ok(Some(user)) => Ok(user),
-        Ok(None) => return Err(JsonProblems::unauthorized(Some("Invalid authentication credentials"), None)),
+        Ok(None) => return Err(JsonProblems::unauthorized("Invalid authentication credentials".to_string())),
         Err(err) => return Err(ErrorMapper::map_error_to_json_problem(err)),
     }
 }
