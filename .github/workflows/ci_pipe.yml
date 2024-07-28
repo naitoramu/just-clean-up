@@ -1,4 +1,4 @@
-name: Build Rust project and run unit tests
+name: Build Rust project, run unit and integration tests
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  BASE_PATH: /just-clean-up
+  JWT_SECRET: SOME_SECRET_TO_ENCODE_JWT_TOKENS
 
 jobs:
   build:
@@ -16,6 +18,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Python
+      uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      run: pip install requests behave
     - name: Build
       run: cargo build --release --verbose
     - name: Run unit tests
