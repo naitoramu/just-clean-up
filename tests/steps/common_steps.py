@@ -31,30 +31,34 @@ def step_impl(context):
 def make_request(method: str, url: str, auth_token: str, body: dict = None) -> Response:
     print("Auth token:", auth_token)
     headers = {
-        "Authorization": auth_token
+        "Authorization": f"Bearer {auth_token}"
     }
+    print("Headers:", headers)
+    response = None
     match method:
         case "GET":
-            return requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers)
         case "POST":
-            return requests.post(url, json=body, headers=headers)
+            response = requests.post(url, json=body, headers=headers)
         case "PUT":
-            return requests.put(url, json=body, headers=headers)
+            response = requests.put(url, json=body, headers=headers)
         case "DELETE":
-            return requests.delete(url, headers=headers)
+            response = requests.delete(url, headers=headers)
         case _:
             raise Exception(f"Request with HTTP method '{method}' not implemented")
+    print("Response:", response.json())
+    return response
 
 
 @then("the response status code should be {status_code:d}")
 def step_impl(context, status_code):
-    asser_actual_eq_expected(context.response.status_code, status_code)
+    assert_actual_eq_expected(context.response.status_code, status_code)
 
 
 @then("each response status code should be {status_code:d}")
 def step_impl(context, status_code):
     for response in context.responses:
-        asser_actual_eq_expected(response.status_code, status_code)
+        assert_actual_eq_expected(response.status_code, status_code)
 
 
 @then("the response body should be a list with {count:d} elements")
@@ -64,12 +68,11 @@ def step_impl(context, count):
     assert len(response_body) == count
 
 
-@then("the response should contain request body details")
+@then("the response should contain request body properties")
 def step_impl(context):
     request_body = context.request_body
     response_body = context.response.json()
-    for key, value in request_body.items():
-        assert response_body[key] == value
+    assert_actual_eq_expected(response_body, request_body)
 
 
 @then("the response should contain not null field '{field}'")
@@ -79,9 +82,37 @@ def step_impl(context, field):
 
 @then("the response should contain field '{field}' with value '{value}'")
 def step_impl(context, field, value):
-    asser_actual_eq_expected(context.response.json()[field], value)
+    assert_actual_eq_expected(context.response.json()[field], value)
 
 
-def asser_actual_eq_expected(actual, expected) -> None :
+def assert_actual_list_contains_expected_list_elements(actual, expected):
+    for exp_element, act_element in zip(expected, actual):
+        if isinstance(exp_element, dict):
+            assert_actual_dict_contains_expected_dict_fields(act_element, exp_element)
+        elif isinstance(exp_element, list):
+            assert_actual_list_contains_expected_list_elements(act_element, exp_element)
+        else:
+            assert exp_element in actual, f"Expected actual list: {actual} to contain '{exp_element}'"
+
+
+def assert_actual_eq_expected(actual, expected) -> None:
+    if isinstance(expected, dict):
+        assert_actual_dict_contains_expected_dict_fields(actual, expected)
+    elif isinstance(expected, list):
+        assert_actual_list_contains_expected_list_elements(actual, expected)
+    else:
+        assert_actual_var_eq_expected_var(actual, expected)
+
+
+def assert_actual_dict_contains_expected_dict_fields(actual, expected):
+    for key, value in expected.items():
+        print(type(value))
+        if isinstance(value, dict):
+            assert_actual_dict_contains_expected_dict_fields(actual[key], value)
+        else:
+            assert_actual_eq_expected(actual[key], value)
+
+
+def assert_actual_var_eq_expected_var(actual, expected):
     assert actual == expected, \
         f"Expected actual '{actual}' to be '{expected}'"

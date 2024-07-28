@@ -14,15 +14,21 @@ class TestUsersClient:
 def step_impl(context):
     context.cleaning_plan = {}
     for key, value in context.table[0].items():
-        context.cleaning_plan[key] = value
+        if key == 'startDate':
+            context.cleaning_plan[key] = int(value)
+        else:
+            context.cleaning_plan[key] = value
 
 
 @given("cleaning plan duties")
 def step_impl(context):
-    context.cleaning_plan['duties'] = {}
+    context.cleaning_plan['duties'] = []
     for row in context.table:
+        duty = {}
         for key, value in row.items():
-            context.cleaning_plan['duties']['key'] = value
+            duty[key] = value
+
+        context.cleaning_plan['duties'].append(duty)
 
 
 @given("cleaning plan cleaner identifiers with existing users")
