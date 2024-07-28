@@ -1,5 +1,4 @@
 use std::{fmt, u16};
-use std::collections::HashMap;
 
 use axum::{BoxError, http::StatusCode, Json, response::{IntoResponse, Response}};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -24,6 +23,7 @@ pub struct JsonProblem {
 }
 
 impl JsonProblem {
+
     pub fn new(status: StatusCode, title: String, detail: String, internal_error: Option<String>) -> Self {
         Self { status, title, detail, internal_error }
     }
@@ -37,15 +37,13 @@ impl JsonProblem {
         )
     }
 
-    pub fn with_properties(&self, properties: HashMap<&str, String>) -> Self {
-        let mut title = self.title.clone();
-        let mut detail = self.detail.clone();
-        for (key, value) in &properties {
-            title = title.replace(format!("${{{}}}", key).as_str(), value);
-            detail = detail.replace(format!("${{{}}}", key).as_str(), value);
-        }
-
-        JsonProblem::new(self.status, title, detail, self.internal_error.clone())
+    pub fn with_detail(&self, detail: String) -> Self {
+        JsonProblem::new(
+            self.status.clone(),
+            self.title.clone(),
+            detail,
+            self.internal_error.clone()
+        )
     }
 }
 
