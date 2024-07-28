@@ -24,6 +24,7 @@ pub enum ProblemType {
     AccessForbidden(BoxError),
     Unauthorized(BoxError),
     MethodNotAllowed,
+    UnprocessableEntity,
 }
 
 impl ProblemType {
@@ -44,6 +45,7 @@ impl ProblemType {
 
             ProblemType::Unauthorized(_) => StatusCode::UNAUTHORIZED,
             ProblemType::MethodNotAllowed => StatusCode::METHOD_NOT_ALLOWED,
+            ProblemType::UnprocessableEntity => StatusCode::UNPROCESSABLE_ENTITY,
 
             ProblemType::InternalServerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
@@ -75,6 +77,7 @@ impl ProblemType {
 
             ProblemType::BadRequest |
             ProblemType::MethodNotAllowed |
+            ProblemType::UnprocessableEntity |
             ProblemType::ResourceNotFound => None,
         }
     }
