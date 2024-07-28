@@ -28,4 +28,4 @@ jobs:
     - name: Run unit tests
       run: cargo test --verbose
     - name: Run integration tests
-      run: behave test
+      run: behave tests
