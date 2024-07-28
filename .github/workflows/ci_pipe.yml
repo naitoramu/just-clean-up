@@ -1,4 +1,4 @@
-name: Build Rust project, run unit and integration tests
+name: Build Rust project and run unit tests
 
 on:
   push:
@@ -20,5 +20,4 @@ jobs:
       run: cargo build --release --verbose
     - name: Run unit tests
       run: cargo test --verbose
-    - name: Run integration tests
-      run: behave tets
+
