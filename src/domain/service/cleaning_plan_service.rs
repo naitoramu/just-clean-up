@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::entities::cleaning_plan::CleaningPlan;
 use crate::entities::User;
 use crate::error::json_problem::JsonProblem;
+use crate::error::json_problems::JsonProblems;
 use crate::repositories::crud_repository::CrudRepository;
 
 pub struct CleaningPlanService {
@@ -42,6 +43,7 @@ impl CleaningPlanService {
         &self,
         cleaning_plan: &CleaningPlan,
     ) -> Result<CleaningPlan, JsonProblem> {
+        self.validate_users_exists(cleaning_plan.cleaner_ids.clone()).await?;
         self.cleaning_plan_repository.create(cleaning_plan).await.map_err(Into::into)
     }
 
@@ -50,6 +52,7 @@ impl CleaningPlanService {
         id: String,
         cleaning_plan: &CleaningPlan,
     ) -> Result<CleaningPlan, JsonProblem> {
+        self.validate_users_exists(cleaning_plan.cleaner_ids.clone()).await?;
         self.cleaning_plan_repository.update(id, cleaning_plan).await.map_err(Into::into)
     }
 
@@ -61,5 +64,14 @@ impl CleaningPlanService {
 
         self.get_cleaning_plan_if_user_is_assigned_to_it(plan_id.clone(), user_id).await?;
         self.cleaning_plan_repository.delete(plan_id).await.map_err(Into::into)
+    }
+
+    async fn validate_users_exists(&self, user_ids: Vec<String>) -> Result<(), JsonProblem> {
+        for user_id in user_ids {
+            if self.user_repository.get_by_id(user_id.clone()).await?.is_none() {
+                return Err(JsonProblems::unrpocessable_entity(format!("User '{user_id}' does not exist")))
+            }
+        }
+        Ok(())
     }
 }

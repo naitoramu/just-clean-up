@@ -8,9 +8,6 @@ use crate::error::problem_type::ProblemType;
 pub struct JsonProblems;
 
 impl JsonProblems {
-}
-
-impl JsonProblems {
 
     pub fn resource_not_found(resource_type: &str, id: String) -> JsonProblem {
         let properties = HashMap::from([
@@ -60,6 +57,10 @@ impl JsonProblems {
        JsonProblem::from_type(ProblemType::BadRequest).with_properties(HashMap::from([
            ("message", message)
        ]))
+    }
+
+    pub fn unrpocessable_entity(detail: String) -> JsonProblem {
+        JsonProblem::from_type(ProblemType::UnprocessableEntity)
     }
 
     pub fn internal_server_error(error: BoxError) -> JsonProblem {
