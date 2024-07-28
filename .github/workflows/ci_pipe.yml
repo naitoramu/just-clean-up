@@ -27,4 +27,5 @@ jobs:
       run: cargo build --release --verbose
     - name: Run unit tests
       run: cargo test --verbose
-
+    - name: Run integration tests
+      run: behave tets
