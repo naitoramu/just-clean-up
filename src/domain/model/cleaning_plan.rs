@@ -2,10 +2,10 @@ use mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
 use serde::{Deserialize, Serialize};
 
 use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
-use crate::entities::duty::Duty;
-use crate::entities::Entity;
-use crate::mapper::cleaning_plan_mapper::CleaningPlanMapper;
-use crate::mapper::Mapper;
+use crate::domain::model::duty::Duty;
+use crate::domain::model::Entity;
+use crate::api::mapper::cleaning_plan_mapper::CleaningPlanMapper;
+use crate::api::mapper::Mapper;
 
 #[derive(Serialize, Deserialize)]
 #[non_exhaustive]

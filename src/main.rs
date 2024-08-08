@@ -2,17 +2,16 @@ use log::debug;
 use crate::config::AppConfig;
 use crate::server::Server;
 
-mod entities;
 mod repositories;
 mod error;
 mod server;
 mod config;
-mod mapper;
 mod api;
 mod database;
 mod domain;
 mod jwt;
 mod middleware;
+mod router;
 
 #[tokio::main]
 async fn main() {

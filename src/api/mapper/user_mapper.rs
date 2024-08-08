@@ -1,6 +1,6 @@
 use crate::api::dto::user_dto::UserDto;
-use crate::entities::User;
-use crate::mapper::Mapper;
+use crate::domain::model::User;
+use crate::api::mapper::Mapper;
 
 pub trait UserMapper {}
 

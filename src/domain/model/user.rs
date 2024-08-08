@@ -2,9 +2,9 @@ use mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
 use serde::{Deserialize, Serialize};
 
 use crate::api::dto::user_dto::UserDto;
-use crate::entities::Entity;
-use crate::mapper::Mapper;
-use crate::mapper::user_mapper::UserMapper;
+use crate::domain::model::Entity;
+use crate::api::mapper::Mapper;
+use crate::api::mapper::user_mapper::UserMapper;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct User {

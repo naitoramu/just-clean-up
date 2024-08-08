@@ -6,8 +6,9 @@ use log::{debug, info};
 
 use crate::api::controller::{auth_controller, cleaning_plan_controller, health_controller, user_controller};
 use crate::database::database::Database;
-use crate::entities::User;
+use crate::domain::model::User;
 use crate::middleware;
+use crate::router::Routes;
 
 pub struct Server;
 
@@ -16,32 +17,14 @@ impl Server {
         let db = Database::mongo_db_connection().await;
         debug!("Database connection established");
 
-
-        let auth_middleware = axum::middleware::from_fn_with_state(
-            db.get_repository::<User>(),
-            middleware::authorization_middleware,
-        );
-
-        let app = Router::new()
-            .merge(health_controller::routes())
-            .nest(base_path.as_str(), Router::new()
-                .merge(auth_controller::public_routes(&db))
-                .merge(user_controller::public_routes(&db))
-                .merge(auth_controller::private_routes(&db).layer(auth_middleware.clone()))
-                .nest("/v1", Router::new()
-                    .merge(user_controller::private_routes(&db))
-                    .merge(cleaning_plan_controller::routes(&db))
-                    .layer(auth_middleware),
-                ),
-            ).layer(from_fn(middleware::error_handling_middleware));
-
         let addr = SocketAddr::from(([127, 0, 0, 1], port));
 
         let listener = tokio::net::TcpListener::bind(addr).await
             .expect("Failed to bind socket");
-
         info!("Server started, listening on {addr}");
-        axum::serve(listener, app).await
+
+        let router = Routes::build_routes(&db, base_path);
+        axum::serve(listener, router).await
             .expect("Failed to start server");
     }
 }

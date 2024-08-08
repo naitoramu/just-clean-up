@@ -6,7 +6,7 @@ use axum::http::HeaderValue;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use log::{debug, trace};
-use crate::entities::User;
+use crate::domain::model::User;
 use crate::error::error_mapper::ErrorMapper;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;

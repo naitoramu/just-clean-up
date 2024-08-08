@@ -8,7 +8,7 @@ use serde::Deserialize;
 
 use crate::database::database::Database;
 use crate::domain::service::auth_service::AuthService;
-use crate::entities::User;
+use crate::domain::model::User;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 use crate::jwt::JwtToken;

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use crate::entities::cleaning_plan::CleaningPlan;
-use crate::entities::User;
+use crate::domain::model::cleaning_plan::CleaningPlan;
+use crate::domain::model::User;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 use crate::repositories::crud_repository::CrudRepository;

@@ -34,7 +34,6 @@ def make_request(method: str, url: str, auth_token: str, body: dict = None) -> R
         "Authorization": f"Bearer {auth_token}"
     }
     print("Headers:", headers)
-    response = None
     match method:
         case "GET":
             response = requests.get(url, headers=headers)

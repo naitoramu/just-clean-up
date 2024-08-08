@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::entities::User;
+use crate::domain::model::User;
 use crate::error::json_problem::JsonProblem;
 use crate::repositories::crud_repository::CrudRepository;
 

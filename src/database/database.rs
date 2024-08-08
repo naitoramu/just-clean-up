@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::database::mongo_database::MongoDatabase;
-use crate::entities::Entity;
+use crate::domain::model::Entity;
 use crate::repositories::crud_repository::CrudRepository;
 use crate::repositories::mongo_repository::MongoRepository;
 

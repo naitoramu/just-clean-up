@@ -2,11 +2,9 @@ use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
 
-use mapper::user_mapper::UserMapper;
-
-use crate::entities::User;
-use crate::mapper;
-use crate::mapper::Mapper;
+use crate::api::mapper::Mapper;
+use crate::api::mapper::user_mapper::UserMapper;
+use crate::domain::model::User;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UserDto {

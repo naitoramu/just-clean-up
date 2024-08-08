@@ -1,7 +1,7 @@
 use crate::api::dto::cleaning_plan_dto::{CleaningPlanDto, DutyDto};
-use crate::entities::cleaning_plan::CleaningPlan;
-use crate::entities::duty::Duty;
-use crate::mapper::Mapper;
+use crate::domain::model::cleaning_plan::CleaningPlan;
+use crate::domain::model::duty::Duty;
+use crate::api::mapper::Mapper;
 
 pub trait CleaningPlanMapper {}
 

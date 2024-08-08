@@ -8,7 +8,7 @@ use axum::routing::{delete, get, post, put};
 use crate::api::dto::user_dto::UserDto;
 use crate::database::database::Database;
 use crate::domain::service::user_service::UserService;
-use crate::entities::{Entity, User};
+use crate::domain::model::{Entity, User};
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 

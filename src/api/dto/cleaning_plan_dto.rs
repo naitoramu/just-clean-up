@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::entities::cleaning_plan::CleaningPlan;
-use crate::mapper::cleaning_plan_mapper::CleaningPlanMapper;
-use crate::mapper::Mapper;
+use crate::domain::model::cleaning_plan::CleaningPlan;
+use crate::api::mapper::cleaning_plan_mapper::CleaningPlanMapper;
+use crate::api::mapper::Mapper;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

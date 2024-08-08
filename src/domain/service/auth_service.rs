@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use chrono::{Duration, Utc};
 
-use crate::entities::User;
+use crate::domain::model::User;
 use crate::error::json_problem::JsonProblem;
 use crate::jwt;
 use crate::jwt::{JwtClaims, JwtToken};

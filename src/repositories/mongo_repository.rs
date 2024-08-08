@@ -7,7 +7,7 @@ use mongodb::bson::{doc, to_document};
 use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
 
-use crate::entities::Entity;
+use crate::domain::model::Entity;
 use crate::repositories::crud_repository::CrudRepository;
 use crate::repositories::filter_repository::FilterRepository;
 use crate::repositories::ObjectIdMapper;
