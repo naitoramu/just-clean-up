@@ -9,7 +9,7 @@ pub trait Mapper<D, E> where E: MongoEntity
 
     fn map_to_domain_model(entity: E) -> D;
 
-    fn str_to_object_id(hex: String) -> Result<ObjectId, BoxError> {
+    fn str_to_object_id(hex: &String) -> Result<ObjectId, BoxError> {
         if hex.is_empty() {
             return Ok(ObjectId::new());
         }

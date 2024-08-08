@@ -15,7 +15,7 @@ pub struct CleaningPlanEntity {
 
     pub address: String,
 
-    pub participant_ids: Vec<String>,
+    pub participant_ids: Vec<ObjectId>,
 
     pub duties: Vec<DutyEntity>,
 

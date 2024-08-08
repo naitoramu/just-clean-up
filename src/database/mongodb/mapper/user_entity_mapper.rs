@@ -9,7 +9,7 @@ impl Mapper<User, UserEntity> for UserEntityMapper {
 
     fn map_to_entity(domain_model: User) -> Result<UserEntity, BoxError> {
         Ok(UserEntity {
-            id: Self::str_to_object_id(domain_model.id)?,
+            id: Self::str_to_object_id(&domain_model.id)?,
             username: domain_model.username,
             email: domain_model.email,
             password: domain_model.password,

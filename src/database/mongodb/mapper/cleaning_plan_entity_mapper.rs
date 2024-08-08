@@ -1,4 +1,5 @@
 use axum::BoxError;
+use mongodb::bson::oid::ObjectId;
 use crate::database::mongodb::entity::cleaning_plan::CleaningPlanEntity;
 use crate::database::mongodb::entity::duty::DutyEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
@@ -11,10 +12,12 @@ impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
 
     fn map_to_entity(domain_model: CleaningPlan) -> Result<CleaningPlanEntity, BoxError> {
         Ok(CleaningPlanEntity {
-            id: Self::str_to_object_id(domain_model.id)?,
+            id: Self::str_to_object_id(&domain_model.id)?,
             title: domain_model.title,
             address: domain_model.address,
-            participant_ids: domain_model.participant_ids,
+            participant_ids: domain_model.participant_ids.iter()
+                .map(Self::str_to_object_id)
+                .collect::<Result<Vec<ObjectId>, BoxError>>()?,
             duties: domain_model.duties.iter()
                 .map(Self::map_duty_domain_model_to_entity)
                 .collect::<Result<Vec<DutyEntity>, BoxError>>()?,
@@ -27,7 +30,7 @@ impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
             entity.id.to_hex(),
             entity.title,
             entity.address,
-            entity.participant_ids,
+            entity.participant_ids.iter().map(|user_id| user_id.to_hex()).collect(),
             entity.duties.iter().map(Self::map_duty_entity_to_domain_model).collect(),
             entity.start_date
         )
@@ -39,7 +42,7 @@ impl CleaningPlanEntityMapper {
     fn map_duty_domain_model_to_entity(domain_model_ref: &Duty) -> Result<DutyEntity, BoxError> {
         let domain_model = domain_model_ref.clone();
         Ok(DutyEntity {
-            id: Self::str_to_object_id(domain_model.id)?,
+            id: Self::str_to_object_id(&domain_model.id)?,
             title: domain_model.title,
             todo_list: domain_model.todo_list,
             img_src: domain_model.img_src,
