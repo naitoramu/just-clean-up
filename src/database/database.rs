@@ -7,7 +7,7 @@ use crate::database::mongodb::entity::user::UserEntity;
 use crate::database::mongodb::mongo_database::MongoDatabase;
 use crate::database::mongodb::repository::mongo_repository::MongoRepository;
 use crate::domain::model::cleaning_plan::CleaningPlan;
-use crate::domain::model::model::DomainModel;
+use crate::domain::model::domain_model::DomainModel;
 use crate::domain::model::user::User;
 
 pub struct Database {

@@ -2,11 +2,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
+
 use crate::database::crud_repository::CrudRepository;
 use crate::domain::model::user::User;
+use crate::domain::service::jwt_service;
+use crate::domain::service::jwt_service::JwtClaims;
 use crate::error::json_problem::JsonProblem;
-use crate::jwt;
-use crate::jwt::{JwtClaims, JwtToken};
 
 pub struct AuthService {
     user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
@@ -34,14 +35,14 @@ impl AuthService {
         ).await.map_err(Into::into)
     }
 
-    pub fn create_jwt_for_user(&self, user_id: String) -> Result<JwtToken, JsonProblem> {
+    pub fn create_jwt_for_user(&self, user_id: String) -> Result<String, JsonProblem> {
         let now = Utc::now();
         let expire: chrono::TimeDelta = Duration::hours(24);
         let exp: usize = (now + expire).timestamp() as usize;
         let iat: usize = now.timestamp() as usize;
         let claim = JwtClaims { iat, exp, user_id };
 
-        jwt::generate_json_web_token(claim).map_err(Into::into)
+        jwt_service::generate_json_web_token(claim).map_err(Into::into)
     }
 
 }

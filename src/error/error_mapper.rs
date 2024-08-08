@@ -14,6 +14,7 @@ pub struct ErrorMapper;
 impl ErrorMapper {
 
     pub fn map_error_to_json_problem(error: BoxError) -> JsonProblem {
+
         if error.is::<JsonProblem>() {
             let json_problem = error.downcast_ref::<JsonProblem>().unwrap().clone();
             debug!("JsonProblem: {}", json_problem.to_string());

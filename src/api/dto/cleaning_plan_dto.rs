@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::mapper::cleaning_plan_mapper::CleaningPlanMapper;
-use crate::api::mapper::Mapper;
+use crate::api::mapper::cleaning_plan_dto_mapper::CleaningPlanMapper;
+use crate::api::mapper::dto_mapper::DtoMapper;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 
 #[derive(Serialize, Deserialize)]
@@ -43,8 +43,14 @@ pub struct DutyDto {
     pub penalty: String,
 }
 
-impl From<CleaningPlanDto> for CleaningPlan {
-    fn from(dto: CleaningPlanDto) -> Self {
-        <dyn CleaningPlanMapper>::map_to_entity(dto)
+impl Into<CleaningPlan> for CleaningPlanDto {
+    fn into(self) -> CleaningPlan {
+        <dyn CleaningPlanMapper>::map_to_domain_model(self)
+    }
+}
+
+impl From<CleaningPlan> for CleaningPlanDto {
+    fn from(entity: CleaningPlan) -> Self {
+        <dyn CleaningPlanMapper>::map_to_dto(entity)
     }
 }

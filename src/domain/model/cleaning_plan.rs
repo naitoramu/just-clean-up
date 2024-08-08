@@ -1,8 +1,5 @@
-use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
-use crate::api::mapper::cleaning_plan_mapper::CleaningPlanMapper;
-use crate::api::mapper::Mapper;
 use crate::domain::model::duty::Duty;
-use crate::domain::model::model::DomainModel;
+use crate::domain::model::domain_model::DomainModel;
 
 #[derive(Clone)]
 #[non_exhaustive]
@@ -31,12 +28,6 @@ impl CleaningPlan {
         start_date: u64
     ) -> Self {
         CleaningPlan { id, title, address, participant_ids, duties, start_date }
-    }
-}
-
-impl From<CleaningPlan> for CleaningPlanDto {
-    fn from(entity: CleaningPlan) -> Self {
-        <dyn CleaningPlanMapper>::map_to_dto(entity)
     }
 }
 

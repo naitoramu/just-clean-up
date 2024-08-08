@@ -6,12 +6,13 @@ use axum::http::HeaderValue;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use log::trace;
+
 use crate::database::crud_repository::CrudRepository;
 use crate::domain::model::user::User;
+use crate::domain::service::jwt_service::{decode_jwt, JwtClaims};
 use crate::error::error_mapper::ErrorMapper;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
-use crate::jwt::{decode_jwt, JwtClaims, JwtToken};
 
 pub async fn error_handling_middleware(
     req: Request<Body>,
@@ -75,7 +76,7 @@ fn extract_bearer_token(auth_header: &str) -> Result<String, JsonProblem> {
 }
 
 fn decode_token(token: String) -> Result<JwtClaims, JsonProblem> {
-    match decode_jwt(JwtToken { access_token: token }) {
+    match decode_jwt(token) {
         Ok(claims) => Ok(claims),
         Err(_) => Err(JsonProblems::unauthorized("Failed to decode JWT token".to_string()))
     }

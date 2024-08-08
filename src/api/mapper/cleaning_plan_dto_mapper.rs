@@ -1,13 +1,13 @@
 use crate::api::dto::cleaning_plan_dto::{CleaningPlanDto, DutyDto};
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::domain::model::duty::Duty;
-use crate::api::mapper::Mapper;
+use crate::api::mapper::dto_mapper::DtoMapper;
 
 pub trait CleaningPlanMapper {}
 
-impl Mapper<CleaningPlanDto, CleaningPlan> for dyn CleaningPlanMapper {
+impl DtoMapper<CleaningPlanDto, CleaningPlan> for dyn CleaningPlanMapper {
 
-    fn map_to_entity(dto: CleaningPlanDto) -> CleaningPlan {
+    fn map_to_domain_model(dto: CleaningPlanDto) -> CleaningPlan {
         CleaningPlan::new(
             dto.id,
             dto.title,

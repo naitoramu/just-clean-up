@@ -8,7 +8,6 @@ mod config;
 mod api;
 mod database;
 mod domain;
-mod jwt;
 mod middleware;
 mod router;
 

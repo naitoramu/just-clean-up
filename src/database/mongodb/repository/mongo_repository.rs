@@ -11,7 +11,7 @@ use crate::database::crud_repository::CrudRepository;
 use crate::database::filter_repository::FilterRepository;
 use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::repository::ObjectIdMapper;
-use crate::domain::model::model::DomainModel;
+use crate::domain::model::domain_model::DomainModel;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 

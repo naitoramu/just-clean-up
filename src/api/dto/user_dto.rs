@@ -1,8 +1,7 @@
-use axum::Json;
-use axum::response::{IntoResponse, Response};
 use serde::{Deserialize, Serialize};
-use crate::api::mapper::Mapper;
-use crate::api::mapper::user_mapper::UserMapper;
+
+use crate::api::mapper::dto_mapper::DtoMapper;
+use crate::api::mapper::user_dto_mapper::UserDtoMapper;
 use crate::domain::model::user::User;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -18,15 +17,14 @@ pub struct UserDto {
     pub password: String,
 }
 
-impl From<UserDto> for User {
-    fn from(value: UserDto) -> Self {
-        <dyn UserMapper>::map_to_entity(value)
-
+impl Into<User> for UserDto {
+    fn into(self) -> User {
+        <dyn UserDtoMapper>::map_to_domain_model(self)
     }
 }
 
-impl IntoResponse for UserDto {
-    fn into_response(self) -> Response {
-        Json(self).into_response()
+impl From<User> for UserDto {
+    fn from(entity: User) -> Self {
+        <dyn UserDtoMapper>::map_to_dto(entity)
     }
 }
