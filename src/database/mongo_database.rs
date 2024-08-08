@@ -26,7 +26,7 @@ impl MongoDatabase {
 
     pub async fn establish_connection(self) -> Result<Self, mongodb::error::Error> {
         let database = Client::with_options(self.client_options.clone())?
-            .database("just-clean-up");
+            .database("just_clean_up");
 
         DATABASE.set(database).expect("Cannot create database instance");
         debug!("Mongo database connection established successfully");

@@ -28,7 +28,7 @@ pub struct DutyDto {
 
     pub title: String,
 
-    pub description: String,
+    pub todo_list: Vec<String>,
 
     #[serde(skip_deserializing)]
     pub img_src: Option<String>,
@@ -37,7 +37,7 @@ pub struct DutyDto {
 
     pub offset: String,
 
-    pub penalty: String
+    pub penalty: String,
 }
 
 impl From<CleaningPlanDto> for CleaningPlan {

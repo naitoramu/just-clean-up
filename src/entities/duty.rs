@@ -1,13 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::entities::penalty::Penalty;
-
 #[derive(Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct Duty {
 
     pub title: String,
 
-    pub description: String,
+    pub todo_list: Vec<String>,
 
     pub img_src: Option<String>,
 
@@ -15,19 +14,19 @@ pub struct Duty {
 
     pub offset: String,
 
-    pub penalty: Penalty
+    pub penalty: String,
 }
 
 impl Duty {
 
     pub fn new(
         title: String,
-        description: String,
+        todo_list: Vec<String>,
         img_src: Option<String>,
         repetition: String,
         offset: String,
-        penalty: Penalty
+        penalty: String,
     ) -> Self {
-        Duty { title, description, img_src, repetition, offset, penalty }
+        Duty { title, todo_list, img_src, repetition, offset, penalty }
     }
 }

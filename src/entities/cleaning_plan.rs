@@ -8,6 +8,7 @@ use crate::mapper::cleaning_plan_mapper::CleaningPlanMapper;
 use crate::mapper::Mapper;
 
 #[derive(Serialize, Deserialize)]
+#[non_exhaustive]
 pub struct CleaningPlan {
 
     #[serde(rename = "_id")]
@@ -19,7 +20,7 @@ pub struct CleaningPlan {
 
     pub address: String,
 
-    pub cleaner_ids: Vec<String>,
+    pub participant_ids: Vec<String>,
 
     pub duties: Vec<Duty>,
 
@@ -31,11 +32,11 @@ impl CleaningPlan {
         id: String,
         title: String,
         address: String,
-        cleaner_ids: Vec<String>,
+        participant_ids: Vec<String>,
         duties: Vec<Duty>,
         start_date: u64
     ) -> Self {
-        CleaningPlan { id, title, address, cleaner_ids, duties, start_date }
+        CleaningPlan { id, title, address, participant_ids, duties, start_date }
     }
 }
 

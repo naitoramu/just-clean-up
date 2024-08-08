@@ -31,7 +31,7 @@ impl CleaningPlanService {
             .map_err(Into::<JsonProblem>::into)?;
 
         if let Some(plan) = maybe_plan {
-            if plan.cleaner_ids.contains(&user_id) {
+            if plan.participant_ids.contains(&user_id) {
                 return Ok(Some(plan))
             }
         }
@@ -43,7 +43,7 @@ impl CleaningPlanService {
         &self,
         cleaning_plan: &CleaningPlan,
     ) -> Result<CleaningPlan, JsonProblem> {
-        self.validate_users_exists(cleaning_plan.cleaner_ids.clone()).await?;
+        self.validate_users_exists(cleaning_plan.participant_ids.clone()).await?;
         self.cleaning_plan_repository.create(cleaning_plan).await.map_err(Into::into)
     }
 
@@ -52,7 +52,7 @@ impl CleaningPlanService {
         id: String,
         cleaning_plan: &CleaningPlan,
     ) -> Result<CleaningPlan, JsonProblem> {
-        self.validate_users_exists(cleaning_plan.cleaner_ids.clone()).await?;
+        self.validate_users_exists(cleaning_plan.participant_ids.clone()).await?;
         self.cleaning_plan_repository.update(id, cleaning_plan).await.map_err(Into::into)
     }
 
