@@ -4,8 +4,6 @@ use axum::BoxError;
 use mongodb::bson::oid::ObjectId;
 
 pub mod mongo_repository;
-pub mod filter_repository;
-pub mod crud_repository;
 
 struct ObjectIdMapper;
 impl ObjectIdMapper {

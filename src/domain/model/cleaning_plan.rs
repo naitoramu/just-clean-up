@@ -1,19 +1,13 @@
-use mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
-use serde::{Deserialize, Serialize};
-
 use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
-use crate::domain::model::duty::Duty;
-use crate::domain::model::Entity;
 use crate::api::mapper::cleaning_plan_mapper::CleaningPlanMapper;
 use crate::api::mapper::Mapper;
+use crate::domain::model::duty::Duty;
+use crate::domain::model::model::DomainModel;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 #[non_exhaustive]
 pub struct CleaningPlan {
 
-    #[serde(rename = "_id")]
-    #[serde(deserialize_with = "deserialize_hex_string_from_object_id")]
-    #[serde(skip_serializing_if = "String::is_empty")]
     pub id: String,
 
     pub title: String,
@@ -46,12 +40,8 @@ impl From<CleaningPlan> for CleaningPlanDto {
     }
 }
 
-impl Entity for CleaningPlan {
+impl DomainModel for CleaningPlan {
     fn get_resource_name() -> &'static str {
         "Cleaning Plan"
-    }
-
-    fn get_collection_name() -> &'static str {
-        "cleaning_plans"
     }
 }

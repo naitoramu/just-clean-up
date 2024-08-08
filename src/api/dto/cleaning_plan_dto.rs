@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::api::mapper::cleaning_plan_mapper::CleaningPlanMapper;
 use crate::api::mapper::Mapper;
+use crate::domain::model::cleaning_plan::CleaningPlan;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +25,9 @@ pub struct CleaningPlanDto {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DutyDto {
+
+    #[serde(skip_deserializing)]
+    pub id: String,
 
     pub title: String,
 

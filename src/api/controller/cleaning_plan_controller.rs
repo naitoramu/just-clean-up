@@ -7,16 +7,17 @@ use axum::routing::{delete, get, post, put};
 
 use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
 use crate::database::database::Database;
-use crate::domain::service::cleaning_plan_service::CleaningPlanService;
-use crate::domain::model::{Entity, User};
 use crate::domain::model::cleaning_plan::CleaningPlan;
+use crate::domain::model::model::DomainModel;
+use crate::domain::model::user::User;
+use crate::domain::service::cleaning_plan_service::CleaningPlanService;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 
 pub fn routes(db: &Database) -> Router {
     let cleaning_plan_service = Arc::new(CleaningPlanService::new(
-        db.get_repository::<User>(),
-        db.get_repository::<CleaningPlan>(),
+        db.get_user_repository(),
+        db.get_cleaning_plan_repository(),
     ));
 
     Router::new()

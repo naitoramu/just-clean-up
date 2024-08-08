@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
+use crate::database::crud_repository::CrudRepository;
 use crate::domain::model::cleaning_plan::CleaningPlan;
-use crate::domain::model::User;
+use crate::domain::model::user::User;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
-use crate::repositories::crud_repository::CrudRepository;
 
 pub struct CleaningPlanService {
     user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
@@ -24,7 +24,6 @@ impl CleaningPlanService {
         plan_id: String,
         user_id: String,
     ) -> Result<Option<CleaningPlan>, JsonProblem> {
-
         let maybe_plan = self.cleaning_plan_repository
             .get_by_id(plan_id.clone())
             .await
@@ -32,7 +31,7 @@ impl CleaningPlanService {
 
         if let Some(plan) = maybe_plan {
             if plan.participant_ids.contains(&user_id) {
-                return Ok(Some(plan))
+                return Ok(Some(plan));
             }
         }
 
@@ -59,9 +58,8 @@ impl CleaningPlanService {
     pub async fn delete_cleaning_plan_if_user_is_assigned_to_it(
         &self,
         plan_id: String,
-        user_id: String
+        user_id: String,
     ) -> Result<(), JsonProblem> {
-
         self.get_cleaning_plan_if_user_is_assigned_to_it(plan_id.clone(), user_id).await?;
         self.cleaning_plan_repository.delete(plan_id).await.map_err(Into::into)
     }
@@ -69,7 +67,7 @@ impl CleaningPlanService {
     async fn validate_users_exists(&self, user_ids: Vec<String>) -> Result<(), JsonProblem> {
         for user_id in user_ids {
             if self.user_repository.get_by_id(user_id.clone()).await?.is_none() {
-                return Err(JsonProblems::unprocessable_entity(format!("User '{user_id}' does not exist")))
+                return Err(JsonProblems::unprocessable_entity(format!("User '{user_id}' does not exist")));
             }
         }
         Ok(())

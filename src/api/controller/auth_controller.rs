@@ -7,8 +7,8 @@ use axum::routing::post;
 use serde::Deserialize;
 
 use crate::database::database::Database;
+use crate::domain::model::user::User;
 use crate::domain::service::auth_service::AuthService;
-use crate::domain::model::User;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 use crate::jwt::JwtToken;
@@ -20,14 +20,14 @@ pub struct LoginDto {
 }
 
 pub fn public_routes(db: &Database) -> Router {
-    let auth_service = Arc::new(AuthService::new(db.get_repository::<User>()));
+    let auth_service = Arc::new(AuthService::new(db.get_user_repository()));
     Router::new()
         .route("/login", post(login_user))
         .with_state(auth_service)
 }
 
 pub fn private_routes(db: &Database) -> Router {
-    let auth_service = Arc::new(AuthService::new(db.get_repository::<User>()));
+    let auth_service = Arc::new(AuthService::new(db.get_user_repository()));
     Router::new()
         .route("/logout", post(logout_user))
         .with_state(auth_service)

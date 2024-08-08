@@ -1,7 +1,7 @@
 use axum::Router;
+
 use crate::api::controller::{auth_controller, cleaning_plan_controller, health_controller, user_controller};
 use crate::database::database::Database;
-use crate::domain::model::User;
 use crate::middleware;
 
 pub struct Routes;
@@ -9,7 +9,7 @@ pub struct Routes;
 impl Routes {
     pub fn build_routes(db: &Database, base_path: String) -> Router {
         let auth_middleware = axum::middleware::from_fn_with_state(
-            db.get_repository::<User>(),
+            db.get_user_repository(),
             middleware::authorization_middleware,
         );
 

@@ -2,7 +2,6 @@ use log::debug;
 use crate::config::AppConfig;
 use crate::server::Server;
 
-mod repositories;
 mod error;
 mod server;
 mod config;

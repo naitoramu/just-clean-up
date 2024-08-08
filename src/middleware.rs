@@ -5,13 +5,13 @@ use axum::extract::{Request, State};
 use axum::http::HeaderValue;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
-use log::{debug, trace};
-use crate::domain::model::User;
+use log::trace;
+use crate::database::crud_repository::CrudRepository;
+use crate::domain::model::user::User;
 use crate::error::error_mapper::ErrorMapper;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 use crate::jwt::{decode_jwt, JwtClaims, JwtToken};
-use crate::repositories::crud_repository::CrudRepository;
 
 pub async fn error_handling_middleware(
     req: Request<Body>,
@@ -59,7 +59,7 @@ fn extract_auth_header(auth_header: Option<&HeaderValue>) -> Result<&str, JsonPr
     Ok(match auth_header {
         Some(header) => match header.to_str() {
             Ok(header) => header,
-            Err(err) => return Err(JsonProblems::unauthorized("Invalid authorization header".to_string()))
+            Err(_) => return Err(JsonProblems::unauthorized("Invalid authorization header".to_string()))
         },
         None => return Err(JsonProblems::unauthorized("Missing authorization header".to_string()))
     })
@@ -77,7 +77,7 @@ fn extract_bearer_token(auth_header: &str) -> Result<String, JsonProblem> {
 fn decode_token(token: String) -> Result<JwtClaims, JsonProblem> {
     match decode_jwt(JwtToken { access_token: token }) {
         Ok(claims) => Ok(claims),
-        Err(err) => Err(JsonProblems::unauthorized("Failed to decode JWT token".to_string()))
+        Err(_) => Err(JsonProblems::unauthorized("Failed to decode JWT token".to_string()))
     }
 }
 

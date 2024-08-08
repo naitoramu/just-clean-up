@@ -34,6 +34,7 @@ impl dyn CleaningPlanMapper {
 
     fn map_duty_dto_to_entity(dto: &DutyDto) -> Duty {
         Duty::new(
+            dto.id.clone(),
             dto.title.clone(),
             dto.todo_list.clone(),
             dto.img_src.clone(),
@@ -45,6 +46,7 @@ impl dyn CleaningPlanMapper {
 
     fn map_duty_entity_to_dto(entity: &Duty) -> DutyDto {
         DutyDto {
+            id: entity.id.clone(),
             title: entity.title.clone(),
             todo_list: entity.todo_list.clone(),
             img_src: entity.img_src.clone(),

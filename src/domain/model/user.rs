@@ -1,17 +1,12 @@
-use mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
-use serde::{Deserialize, Serialize};
-
 use crate::api::dto::user_dto::UserDto;
-use crate::domain::model::Entity;
 use crate::api::mapper::Mapper;
 use crate::api::mapper::user_mapper::UserMapper;
+use crate::domain::model::model::DomainModel;
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Clone, Debug)]
+#[non_exhaustive]
 pub struct User {
 
-    #[serde(rename = "_id")]
-    #[serde(deserialize_with = "deserialize_hex_string_from_object_id")]
-    #[serde(skip_serializing_if = "String::is_empty")]
     pub id: String,
 
     pub username: String,
@@ -21,18 +16,21 @@ pub struct User {
     pub password: String,
 }
 
+impl User {
+
+    pub fn new(id: String, username: String, email: String, password: String) -> Self {
+        User { id, username, email, password }
+    }
+}
+
 impl From<User> for UserDto {
     fn from(entity: User) -> Self {
         <dyn UserMapper>::map_to_dto(entity)
     }
 }
 
-impl Entity for User {
+impl DomainModel for User {
     fn get_resource_name() -> &'static str {
         "User"
-    }
-
-    fn get_collection_name() -> &'static str {
-        "users"
     }
 }

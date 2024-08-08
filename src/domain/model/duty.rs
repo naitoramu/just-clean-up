@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 #[non_exhaustive]
 pub struct Duty {
+
+    pub id: String,
 
     pub title: String,
 
@@ -20,6 +20,7 @@ pub struct Duty {
 impl Duty {
 
     pub fn new(
+        id: String,
         title: String,
         todo_list: Vec<String>,
         img_src: Option<String>,
@@ -27,6 +28,6 @@ impl Duty {
         offset: String,
         penalty: String,
     ) -> Self {
-        Duty { title, todo_list, img_src, repetition, offset, penalty }
+        Duty { id, title, todo_list, img_src, repetition, offset, penalty }
     }
 }

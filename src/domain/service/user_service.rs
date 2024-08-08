@@ -1,8 +1,7 @@
 use std::sync::Arc;
-
-use crate::domain::model::User;
+use crate::database::crud_repository::CrudRepository;
+use crate::domain::model::user::User;
 use crate::error::json_problem::JsonProblem;
-use crate::repositories::crud_repository::CrudRepository;
 
 pub struct UserService {
     user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,

@@ -10,7 +10,7 @@ impl JsonProblems {
 
     pub fn resource_not_found(resource_type: &str, resource_id: String) -> JsonProblem {
         JsonProblem::from_type(&ResourceNotFound::new()).with_detail(
-            format!("Cannot find ${resource_type} with id '${resource_id}'")
+            format!("Cannot find {resource_type} with id '{resource_id}'")
         )
     }
 
@@ -22,7 +22,7 @@ impl JsonProblems {
         }.to_string();
 
         JsonProblem::from_type(&BadRequest::new()).with_detail(
-            format!("Provided ID '${hex_value}' is not valid ObjectID value")
+            format!("Provided ID '{hex_value}' is not valid ObjectID value")
         )
     }
 

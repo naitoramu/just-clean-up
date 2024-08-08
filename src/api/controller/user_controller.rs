@@ -7,13 +7,14 @@ use axum::routing::{delete, get, post, put};
 
 use crate::api::dto::user_dto::UserDto;
 use crate::database::database::Database;
+use crate::domain::model::model::DomainModel;
+use crate::domain::model::user::User;
 use crate::domain::service::user_service::UserService;
-use crate::domain::model::{Entity, User};
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 
 pub fn private_routes(db: &Database) -> Router {
-    let user_service = Arc::new(UserService::new(db.get_repository::<User>()));
+    let user_service = Arc::new(UserService::new(db.get_user_repository()));
     Router::new()
         .route("/users", get(get_users))
         .route("/users/:id", get(get_user))
@@ -23,7 +24,7 @@ pub fn private_routes(db: &Database) -> Router {
 }
 
 pub fn public_routes(db: &Database) -> Router {
-    let user_service = Arc::new(UserService::new(db.get_repository::<User>()));
+    let user_service = Arc::new(UserService::new(db.get_user_repository()));
     Router::new()
         .route("/register", post(create_user))
         .with_state(user_service)

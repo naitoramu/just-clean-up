@@ -2,12 +2,11 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use chrono::{Duration, Utc};
-
-use crate::domain::model::User;
+use crate::database::crud_repository::CrudRepository;
+use crate::domain::model::user::User;
 use crate::error::json_problem::JsonProblem;
 use crate::jwt;
 use crate::jwt::{JwtClaims, JwtToken};
-use crate::repositories::crud_repository::CrudRepository;
 
 pub struct AuthService {
     user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,

@@ -1,13 +1,9 @@
 use std::net::SocketAddr;
 
-use axum::middleware::from_fn;
 use axum::Router;
 use log::{debug, info};
 
-use crate::api::controller::{auth_controller, cleaning_plan_controller, health_controller, user_controller};
 use crate::database::database::Database;
-use crate::domain::model::User;
-use crate::middleware;
 use crate::router::Routes;
 
 pub struct Server;
