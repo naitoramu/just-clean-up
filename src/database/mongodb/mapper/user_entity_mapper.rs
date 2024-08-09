@@ -1,13 +1,13 @@
-use axum::BoxError;
 use crate::database::mongodb::entity::user::UserEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::user::User;
+use crate::error::json_problem::JsonProblem;
 
 pub struct UserEntityMapper;
 
 impl Mapper<User, UserEntity> for UserEntityMapper {
 
-    fn map_to_entity(domain_model: User) -> Result<UserEntity, BoxError> {
+    fn map_to_entity(domain_model: User) -> Result<UserEntity, JsonProblem> {
         Ok(UserEntity {
             id: Self::str_to_object_id(&domain_model.id)?,
             username: domain_model.username,

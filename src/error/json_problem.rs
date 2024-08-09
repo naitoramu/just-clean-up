@@ -1,13 +1,13 @@
 use std::{fmt, u16};
 
-use axum::{BoxError, http::StatusCode, Json, response::{IntoResponse, Response}};
+use axum::{http::StatusCode, Json, response::{IntoResponse, Response}, BoxError};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::config::AppConfig;
 use crate::error::error_mapper::ErrorMapper;
 use crate::error::http_error::HttpError;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct JsonProblem {
     #[serde(serialize_with = "serialize_status_code")]
@@ -60,8 +60,26 @@ impl IntoResponse for JsonProblem {
 }
 
 impl From<BoxError> for JsonProblem {
-    fn from(value: BoxError) -> Self {
+    fn from(value: BoxError) -> JsonProblem {
         ErrorMapper::map_error_to_json_problem(value)
+    }
+}
+
+impl From<mongodb::error::Error> for JsonProblem {
+    fn from(value: mongodb::error::Error) -> Self {
+        ErrorMapper::map_error_to_json_problem(value.into())
+    }
+}
+
+impl From<mongodb::bson::oid::Error> for JsonProblem {
+    fn from(value: mongodb::bson::oid::Error) -> Self {
+        ErrorMapper::map_error_to_json_problem(value.into())
+    }
+}
+
+impl From<jsonwebtoken::errors::Error> for JsonProblem {
+    fn from(value: jsonwebtoken::errors::Error) -> Self {
+        ErrorMapper::map_error_to_json_problem(value.into())
     }
 }
 

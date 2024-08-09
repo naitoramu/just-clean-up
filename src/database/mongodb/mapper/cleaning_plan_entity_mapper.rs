@@ -1,26 +1,26 @@
-use axum::BoxError;
 use mongodb::bson::oid::ObjectId;
 use crate::database::mongodb::entity::cleaning_plan::CleaningPlanEntity;
 use crate::database::mongodb::entity::duty::DutyEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::domain::model::duty::Duty;
+use crate::error::json_problem::JsonProblem;
 
 pub struct CleaningPlanEntityMapper;
 
 impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
 
-    fn map_to_entity(domain_model: CleaningPlan) -> Result<CleaningPlanEntity, BoxError> {
+    fn map_to_entity(domain_model: CleaningPlan) -> Result<CleaningPlanEntity, JsonProblem> {
         Ok(CleaningPlanEntity {
             id: Self::str_to_object_id(&domain_model.id)?,
             title: domain_model.title,
             address: domain_model.address,
             participant_ids: domain_model.participant_ids.iter()
                 .map(Self::str_to_object_id)
-                .collect::<Result<Vec<ObjectId>, BoxError>>()?,
+                .collect::<Result<Vec<ObjectId>, JsonProblem>>()?,
             duties: domain_model.duties.iter()
                 .map(Self::map_duty_domain_model_to_entity)
-                .collect::<Result<Vec<DutyEntity>, BoxError>>()?,
+                .collect::<Result<Vec<DutyEntity>, JsonProblem>>()?,
             start_date: domain_model.start_date,
         })
     }
@@ -39,7 +39,7 @@ impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
 
 impl CleaningPlanEntityMapper {
 
-    fn map_duty_domain_model_to_entity(domain_model_ref: &Duty) -> Result<DutyEntity, BoxError> {
+    fn map_duty_domain_model_to_entity(domain_model_ref: &Duty) -> Result<DutyEntity, JsonProblem> {
         let domain_model = domain_model_ref.clone();
         Ok(DutyEntity {
             id: Self::str_to_object_id(&domain_model.id)?,

@@ -9,6 +9,7 @@ use crate::domain::service::jwt_service;
 use crate::domain::service::jwt_service::JwtClaims;
 use crate::error::json_problem::JsonProblem;
 
+#[non_exhaustive]
 pub struct AuthService {
     user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
 }
@@ -29,10 +30,10 @@ impl AuthService {
 
         self.user_repository.find_first_matching(
             HashMap::from([
-                ("email", email),
-                ("password", password)
+                ("email".to_string(), email),
+                ("password".to_string(), password)
             ])
-        ).await.map_err(Into::into)
+        ).await
     }
 
     pub fn create_jwt_for_user(&self, user_id: String) -> Result<String, JsonProblem> {

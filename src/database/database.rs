@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use axum::BoxError;
 use crate::database::crud_repository::CrudRepository;
 use crate::database::mongodb::entity::cleaning_plan::CleaningPlanEntity;
 use crate::database::mongodb::entity::entity::MongoEntity;
@@ -9,6 +8,7 @@ use crate::database::mongodb::repository::mongo_repository::MongoRepository;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::domain::model::domain_model::DomainModel;
 use crate::domain::model::user::User;
+use crate::error::json_problem::JsonProblem;
 
 pub struct Database {
     mongo_database: Option<MongoDatabase>,
@@ -39,7 +39,7 @@ impl Database {
     where
         E: MongoEntity + Clone + TryFrom<D> + 'static,
         D: DomainModel + Sync + Clone + From<E>,
-        <E as TryFrom<D>>::Error: Into<BoxError>,
+        <E as TryFrom<D>>::Error: Into<JsonProblem>,
     {
         Arc::new(MongoRepository::<E>::new(
             self.mongo_database.as_ref()

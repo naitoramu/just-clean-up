@@ -167,3 +167,24 @@ impl HttpError for InternalServerError {
         }
     }
 }
+
+pub struct NotImplemented;
+impl HttpError for NotImplemented {
+
+    fn new() -> Self {
+        Self {}
+    }
+
+
+    fn status_code(&self) -> StatusCode {
+        StatusCode::NOT_IMPLEMENTED
+    }
+
+    fn title(&self) -> String {
+        String::from("Not implemented")
+    }
+
+    fn detail(&self) -> String {
+        String::from("The server does not support the functionality required to fulfill the request")
+    }
+}

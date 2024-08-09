@@ -1,7 +1,7 @@
 use axum::BoxError;
 use mongodb::bson::oid::Error;
 
-use crate::error::http_error::{BadRequest, Forbidden, HttpError, InternalServerError, MethodNotAllowed, ResourceNotFound, Unauthorized, UnprocessableEntity};
+use crate::error::http_error::{BadRequest, Forbidden, HttpError, InternalServerError, MethodNotAllowed, NotImplemented, ResourceNotFound, Unauthorized, UnprocessableEntity};
 use crate::error::json_problem::JsonProblem;
 
 pub struct JsonProblems;
@@ -48,5 +48,9 @@ impl JsonProblems {
 
     pub fn internal_server_error(error: BoxError) -> JsonProblem {
         JsonProblem::from_type(&InternalServerError::new(error))
+    }
+
+    pub fn not_implemented() -> JsonProblem {
+        JsonProblem::from_type(&NotImplemented)
     }
 }

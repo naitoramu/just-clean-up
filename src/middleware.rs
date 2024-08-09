@@ -86,9 +86,8 @@ async fn get_user_by_jwt_claims(
     jwt_claims: JwtClaims,
     user_repository: Arc<dyn CrudRepository<User>>
 ) -> Result<User, JsonProblem> {
-    match user_repository.get_by_id(jwt_claims.user_id).await {
-        Ok(Some(user)) => Ok(user),
-        Ok(None) => return Err(JsonProblems::unauthorized("Invalid authentication credentials".to_string())),
-        Err(err) => return Err(ErrorMapper::map_error_to_json_problem(err)),
+    match user_repository.get_by_id(jwt_claims.user_id).await? {
+        Some(user) => Ok(user),
+        None => Err(JsonProblems::unauthorized("Invalid authentication credentials".to_string())),
     }
 }

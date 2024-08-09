@@ -26,8 +26,7 @@ impl CleaningPlanService {
     ) -> Result<Option<CleaningPlan>, JsonProblem> {
         let maybe_plan = self.cleaning_plan_repository
             .get_by_id(plan_id.clone())
-            .await
-            .map_err(Into::<JsonProblem>::into)?;
+            .await?;
 
         if let Some(plan) = maybe_plan {
             if plan.participant_ids.contains(&user_id) {
@@ -43,7 +42,7 @@ impl CleaningPlanService {
         cleaning_plan: &CleaningPlan,
     ) -> Result<CleaningPlan, JsonProblem> {
         self.validate_users_exists(cleaning_plan.participant_ids.clone()).await?;
-        self.cleaning_plan_repository.create(cleaning_plan).await.map_err(Into::into)
+        self.cleaning_plan_repository.create(cleaning_plan).await
     }
 
     pub async fn update_cleaning_plan(
@@ -52,7 +51,7 @@ impl CleaningPlanService {
         cleaning_plan: &CleaningPlan,
     ) -> Result<CleaningPlan, JsonProblem> {
         self.validate_users_exists(cleaning_plan.participant_ids.clone()).await?;
-        self.cleaning_plan_repository.update(id, cleaning_plan).await.map_err(Into::into)
+        self.cleaning_plan_repository.update(id, cleaning_plan).await
     }
 
     pub async fn delete_cleaning_plan_if_user_is_assigned_to_it(
@@ -61,7 +60,7 @@ impl CleaningPlanService {
         user_id: String,
     ) -> Result<(), JsonProblem> {
         self.get_cleaning_plan_if_user_is_assigned_to_it(plan_id.clone(), user_id).await?;
-        self.cleaning_plan_repository.delete(plan_id).await.map_err(Into::into)
+        self.cleaning_plan_repository.delete(plan_id).await
     }
 
     async fn validate_users_exists(&self, user_ids: Vec<String>) -> Result<(), JsonProblem> {

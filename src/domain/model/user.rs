@@ -1,6 +1,6 @@
 use crate::domain::model::domain_model::DomainModel;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 #[non_exhaustive]
 pub struct User {
 

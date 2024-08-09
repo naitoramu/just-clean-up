@@ -5,6 +5,7 @@ use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::mapper::cleaning_plan_entity_mapper::CleaningPlanEntityMapper;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::cleaning_plan::CleaningPlan;
+use crate::error::json_problem::JsonProblem;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct CleaningPlanEntity {
@@ -29,7 +30,7 @@ impl From<CleaningPlanEntity> for CleaningPlan {
 }
 
 impl TryFrom<CleaningPlan> for CleaningPlanEntity {
-    type Error = Box<dyn std::error::Error + Send + Sync>;
+    type Error = JsonProblem;
 
     fn try_from(domain_model: CleaningPlan) -> Result<Self, Self::Error> {
         CleaningPlanEntityMapper::map_to_entity(domain_model)

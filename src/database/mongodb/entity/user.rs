@@ -1,10 +1,10 @@
-use axum::BoxError;
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::database::mongodb::mapper::user_entity_mapper::UserEntityMapper;
 use crate::domain::model::user::User;
+use crate::error::json_problem::JsonProblem;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UserEntity {
@@ -39,7 +39,7 @@ impl From<UserEntity> for User {
 }
 
 impl TryFrom<User> for UserEntity {
-    type Error = BoxError;
+    type Error = JsonProblem;
 
     fn try_from(domain_model: User) -> Result<Self, Self::Error> {
         UserEntityMapper::map_to_entity(domain_model)

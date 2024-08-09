@@ -22,3 +22,6 @@ async fn main() {
         AppConfig::get().base_path.clone(),
     ).await;
 }
+
+#[cfg(test)]
+mod tests;

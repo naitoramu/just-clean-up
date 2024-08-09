@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
 
-use axum::Router;
 use log::{debug, info};
 
 use crate::database::database::Database;
