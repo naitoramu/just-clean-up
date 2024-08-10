@@ -1,28 +1,26 @@
 use std::sync::Arc;
 
-use axum::{Extension, Json, Router};
-use axum::extract::State;
-use axum::response::Response;
-use axum::routing::post;
 use crate::api::dto::login_dto::{LoginRequestDto, LoginResponseDto};
-use crate::database::database::Database;
+use crate::context::AppContext;
 use crate::domain::model::user::User;
 use crate::domain::service::auth_service::AuthService;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
+use axum::extract::State;
+use axum::response::Response;
+use axum::routing::post;
+use axum::{Extension, Json, Router};
 
-pub fn public_routes(db: &Database) -> Router {
-    let auth_service = Arc::new(AuthService::new(db.get_user_repository()));
+pub fn public_routes(app_context: &AppContext) -> Router {
     Router::new()
         .route("/login", post(login_user))
-        .with_state(auth_service)
+        .with_state(app_context.get_auth_service())
 }
 
-pub fn private_routes(db: &Database) -> Router {
-    let auth_service = Arc::new(AuthService::new(db.get_user_repository()));
+pub fn private_routes(app_context: &AppContext) -> Router {
     Router::new()
         .route("/logout", post(logout_user))
-        .with_state(auth_service)
+        .with_state(app_context.get_auth_service())
 }
 
 

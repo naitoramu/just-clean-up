@@ -1,33 +1,31 @@
 use std::sync::Arc;
 
-use axum::{Json, Router};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
+use axum::{Json, Router};
 
 use crate::api::dto::user_dto::UserDto;
-use crate::database::database::Database;
+use crate::context::AppContext;
 use crate::domain::model::domain_model::DomainModel;
 use crate::domain::model::user::User;
 use crate::domain::service::user_service::UserService;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 
-pub fn private_routes(db: &Database) -> Router {
-    let user_service = Arc::new(UserService::new(db.get_user_repository()));
+pub fn private_routes(app_context: &AppContext) -> Router {
     Router::new()
         .route("/users", get(get_users))
         .route("/users/:id", get(get_user))
         .route("/users/:id", put(update_user))
         .route("/users/:id", delete(delete_user))
-        .with_state(user_service)
+        .with_state(app_context.get_user_service())
 }
 
-pub fn public_routes(db: &Database) -> Router {
-    let user_service = Arc::new(UserService::new(db.get_user_repository()));
+pub fn public_routes(app_context: &AppContext) -> Router {
     Router::new()
         .route("/register", post(create_user))
-        .with_state(user_service)
+        .with_state(app_context.get_user_service())
 }
 
 async fn get_users(

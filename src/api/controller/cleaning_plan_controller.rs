@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use axum::{Extension, Json, Router};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
+use axum::{Extension, Json, Router};
 
 use crate::api::dto::cleaning_plan_dto::CleaningPlanDto;
-use crate::database::database::Database;
+use crate::context::AppContext;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::domain::model::domain_model::DomainModel;
 use crate::domain::model::user::User;
@@ -14,18 +14,14 @@ use crate::domain::service::cleaning_plan_service::CleaningPlanService;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 
-pub fn routes(db: &Database) -> Router {
-    let cleaning_plan_service = Arc::new(CleaningPlanService::new(
-        db.get_user_repository(),
-        db.get_cleaning_plan_repository(),
-    ));
+pub fn routes(app_context: &AppContext) -> Router {
 
     Router::new()
         .route("/cleaning-plans", post(create_cleaning_plan))
         .route("/cleaning-plans/:id", get(get_cleaning_plan))
         .route("/cleaning-plans/:id", put(update_cleaning_plan))
         .route("/cleaning-plans/:id", delete(delete_cleaning_plan))
-        .with_state(cleaning_plan_service)
+        .with_state(app_context.get_cleaning_plan_service())
 }
 
 async fn get_cleaning_plan(
