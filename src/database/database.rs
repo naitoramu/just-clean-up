@@ -1,13 +1,15 @@
 use std::sync::Arc;
 use crate::database::crud_repository::CrudRepository;
-use crate::database::mongodb::entity::cleaning_plan::CleaningPlanEntity;
+use crate::database::mongodb::entity::cleaning_plan_entity::CleaningPlanEntity;
 use crate::database::mongodb::entity::entity::MongoEntity;
-use crate::database::mongodb::entity::user::UserEntity;
+use crate::database::mongodb::entity::user_duty_entity::UserDutyEntity;
+use crate::database::mongodb::entity::user_entity::UserEntity;
 use crate::database::mongodb::mongo_database::MongoDatabase;
 use crate::database::mongodb::repository::mongo_repository::MongoRepository;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::domain::model::domain_model::DomainModel;
 use crate::domain::model::user::User;
+use crate::domain::model::user_duty::UserDuty;
 use crate::error::json_problem::JsonProblem;
 
 pub struct Database {
@@ -25,6 +27,10 @@ impl Database {
                     .expect("Cannot create collection")
             )
         }
+    }
+
+    pub fn get_user_duty_repository(&self) -> Arc<dyn CrudRepository<UserDuty>> {
+        self.get_repository::<UserDutyEntity, UserDuty>()
     }
 
     pub fn get_cleaning_plan_repository(&self) -> Arc<dyn CrudRepository<CleaningPlan>> {

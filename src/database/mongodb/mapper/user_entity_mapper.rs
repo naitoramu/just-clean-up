@@ -1,4 +1,4 @@
-use crate::database::mongodb::entity::user::UserEntity;
+use crate::database::mongodb::entity::user_entity::UserEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::user::User;
 use crate::error::json_problem::JsonProblem;

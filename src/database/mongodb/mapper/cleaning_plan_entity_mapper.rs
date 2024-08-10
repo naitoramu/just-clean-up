@@ -1,6 +1,6 @@
 use mongodb::bson::oid::ObjectId;
-use crate::database::mongodb::entity::cleaning_plan::CleaningPlanEntity;
-use crate::database::mongodb::entity::duty::DutyEntity;
+use crate::database::mongodb::entity::cleaning_plan_entity::CleaningPlanEntity;
+use crate::database::mongodb::entity::duty_entity::DutyEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::domain::model::duty::Duty;

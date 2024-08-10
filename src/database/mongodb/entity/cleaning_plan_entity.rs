@@ -1,6 +1,6 @@
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
-use crate::database::mongodb::entity::duty::DutyEntity;
+use crate::database::mongodb::entity::duty_entity::DutyEntity;
 use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::mapper::cleaning_plan_entity_mapper::CleaningPlanEntityMapper;
 use crate::database::mongodb::mapper::mapper::Mapper;
