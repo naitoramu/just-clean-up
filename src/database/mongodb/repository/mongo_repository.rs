@@ -7,7 +7,7 @@ use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
 
 use crate::database::crud_repository::CrudRepository;
-use crate::database::filter_repository::FilterRepository;
+use crate::database::read_repository::ReadRepository;
 use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::repository::ObjectIdMapper;
 use crate::domain::model::domain_model::DomainModel;
@@ -29,7 +29,7 @@ where
 }
 
 #[async_trait]
-impl<E, D> FilterRepository<D> for MongoRepository<E>
+impl<E, D> ReadRepository<D> for MongoRepository<E>
 where
     E: MongoEntity + Clone + TryFrom<D>,
     D: DomainModel + Clone + From<E>,

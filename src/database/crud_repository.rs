@@ -1,10 +1,10 @@
-use crate::database::filter_repository::FilterRepository;
+use crate::database::read_repository::ReadRepository;
 use crate::error::json_problem::JsonProblem;
 use async_trait::async_trait;
 use mongodb::bson::oid::ObjectId;
 
 #[async_trait]
-pub trait CrudRepository<T>: FilterRepository<T> {
+pub trait CrudRepository<T>: ReadRepository<T> {
 
     async fn get_all(&self) -> Result<Vec<T>, JsonProblem>;
 

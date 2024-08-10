@@ -23,7 +23,7 @@ impl AppConfig {
             CONFIG.set(AppConfig::new()).expect("Cannot create AppConfig");
         }
 
-        return CONFIG.get().unwrap()
+        CONFIG.get().unwrap()
     }
 
     fn new() -> Self {

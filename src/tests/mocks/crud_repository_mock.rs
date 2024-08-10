@@ -1,5 +1,5 @@
 use crate::database::crud_repository::CrudRepository;
-use crate::database::filter_repository::FilterRepository;
+use crate::database::read_repository::ReadRepository;
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 use async_trait::async_trait;
@@ -41,7 +41,7 @@ where
 }
 
 #[async_trait]
-impl<D> FilterRepository<D> for CrudRepositoryMock<D>
+impl<D> ReadRepository<D> for CrudRepositoryMock<D>
 where
     D: Clone + Sync + Send,
 {

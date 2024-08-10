@@ -10,7 +10,7 @@ pub struct AppContext {
     cleaning_plan_service: Arc<CleaningPlanService>,
 }
 
-impl<'a> AppContext {
+impl AppContext {
 
     pub fn new(database: Database) -> Self {
         Self {
