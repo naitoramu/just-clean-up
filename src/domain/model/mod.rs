@@ -5,5 +5,5 @@ pub mod domain_model;
 pub mod user_duty;
 pub mod duty_fulfilment;
 pub mod user_tasks;
-pub mod penalty;
+pub mod user_penalty;
 pub mod time_duration;

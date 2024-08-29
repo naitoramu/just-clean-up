@@ -4,7 +4,7 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
-
+use crate::api::controller::user_duties_controller;
 use crate::api::dto::user_dto::UserDto;
 use crate::context::AppContext;
 use crate::domain::model::domain_model::DomainModel;
@@ -20,6 +20,8 @@ pub fn private_routes(app_context: &AppContext) -> Router {
         .route("/users/:id", put(update_user))
         .route("/users/:id", delete(delete_user))
         .with_state(app_context.get_user_service())
+        .nest("/users/:user_id", Router::new()
+            .merge(user_duties_controller::routes(app_context)))
 }
 
 pub fn public_routes(app_context: &AppContext) -> Router {

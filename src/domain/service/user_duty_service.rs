@@ -2,8 +2,8 @@ use crate::database::crud_repository::CrudRepository;
 use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
 use crate::domain::model::duty::Duty;
 use crate::domain::model::duty_fulfilment::DutyFulfilment;
-use crate::domain::model::penalty::UserPenalty;
 use crate::domain::model::user_duty::UserDuty;
+use crate::domain::model::user_penalty::UserPenalty;
 use crate::domain::model::user_tasks::UserTasks;
 use crate::error::json_problem::JsonProblem;
 use chrono::{DateTime, Utc};
@@ -22,6 +22,13 @@ impl UserDutyService {
         user_duty_repository: Arc<dyn CrudRepository<UserDuty>>,
     ) -> Self {
         UserDutyService { cleaning_plan_repository, user_duty_repository }
+    }
+
+    pub async fn get_all_user_duties(&self, user_id: String) -> Result<Vec<UserDuty>, JsonProblem> {
+        // TODO: matching String and ObjectID in the database does not work, make better repositories implementation
+        self.user_duty_repository.find_all_matching(HashMap::from([
+            ("user_id".to_string(), user_id),
+        ])).await
     }
 
     pub async fn make_schedules(&self) -> Result<Vec<String>, JsonProblem> {
@@ -46,8 +53,8 @@ impl UserDutyService {
         for (assigned_duty, user_id) in user_to_duty {
             let user_duty = UserDuty::new(
                 "".to_string(),
-                assigned_duty.id.clone(),
                 user_id,
+                assigned_duty.id.clone(),
                 assigned_duty.title.clone(),
                 UserTasks::from_template(&assigned_duty.todo_list),
                 Utc::now() + assigned_duty.repetition.time_delta - assigned_duty.offset.time_delta,

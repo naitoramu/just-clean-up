@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-
+use std::ops::Add;
 use async_trait::async_trait;
 use futures::TryStreamExt;
+use log::debug;
 use mongodb::bson::{doc, to_document};
 use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
@@ -51,6 +52,11 @@ where
     }
 
     async fn find_all_matching(&self, filter: HashMap<String, String>) -> Result<Vec<D>, JsonProblem> {
+        let mut filter_str = "".to_string();
+        for (key, value) in filter.clone() {
+            filter_str = filter_str + format!("({}, {})", key, value).as_str();
+        }
+        debug!("Fetching all documents matching filters '{}'", filter_str);
         match self.collection.find(to_document(&filter).unwrap()).await {
             Ok(entities) => Ok(entities.try_collect::<Vec<E>>().await?.iter().map(|entity| entity.clone().into()).collect()),
             Err(error) => Err(error.into())

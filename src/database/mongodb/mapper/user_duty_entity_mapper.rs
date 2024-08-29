@@ -3,7 +3,7 @@ use mongodb::bson::oid::ObjectId;
 use crate::database::mongodb::entity::user_duty_entity::{UserDutyEntity, UserPenaltyEntity, UserTaskEntity};
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::duty_fulfilment::DutyFulfilment;
-use crate::domain::model::penalty::UserPenalty;
+use crate::domain::model::user_penalty::UserPenalty;
 use crate::domain::model::user_duty::UserDuty;
 use crate::domain::model::user_tasks::{UserTask, UserTasks};
 use crate::error::json_problem::JsonProblem;

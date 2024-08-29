@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use crate::domain::model::domain_model::DomainModel;
 use crate::domain::model::duty_fulfilment::DutyFulfilment;
-use crate::domain::model::penalty::UserPenalty;
+use crate::domain::model::user_penalty::UserPenalty;
 use crate::domain::model::user_tasks::UserTasks;
 
 #[derive(Clone)]
