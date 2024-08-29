@@ -1,4 +1,6 @@
-#[derive(Clone)]
+use crate::domain::model::time_duration::TimeDuration;
+
+#[derive(Clone, Hash, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct Duty {
 
@@ -10,9 +12,9 @@ pub struct Duty {
 
     pub img_src: Option<String>,
 
-    pub repetition: String,
+    pub repetition: TimeDuration,
 
-    pub offset: String,
+    pub offset: TimeDuration,
 
     pub penalty: String,
 }
@@ -24,8 +26,8 @@ impl Duty {
         title: String,
         todo_list: Vec<String>,
         img_src: Option<String>,
-        repetition: String,
-        offset: String,
+        repetition: TimeDuration,
+        offset: TimeDuration,
         penalty: String,
     ) -> Self {
         Duty { id, title, todo_list, img_src, repetition, offset, penalty }

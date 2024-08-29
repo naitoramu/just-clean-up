@@ -19,7 +19,7 @@ pub struct CleaningPlanDto {
 
     pub duties: Vec<DutyDto>,
 
-    pub start_date: u64
+    pub start_date: String
 }
 
 #[derive(Serialize, Deserialize)]

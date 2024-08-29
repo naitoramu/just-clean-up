@@ -1,7 +1,9 @@
+use chrono::DateTime;
 use crate::api::dto::cleaning_plan_dto::{CleaningPlanDto, DutyDto};
-use crate::domain::model::cleaning_plan::CleaningPlan;
+use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
 use crate::domain::model::duty::Duty;
 use crate::api::mapper::dto_mapper::DtoMapper;
+use crate::domain::model::time_duration::TimeDuration;
 
 pub trait CleaningPlanMapper {}
 
@@ -14,7 +16,8 @@ impl DtoMapper<CleaningPlanDto, CleaningPlan> for dyn CleaningPlanMapper {
             dto.address,
             dto.cleaner_ids,
             dto.duties.iter().map(Self::map_duty_dto_to_entity).collect(),
-            dto.start_date
+            DateTime::parse_from_rfc3339(dto.start_date.as_str()).expect("Unable to parse str to DateTime").to_utc(),
+            CleaningPlanStatus::PendingDutyAssignment
         )
     }
 
@@ -25,7 +28,7 @@ impl DtoMapper<CleaningPlanDto, CleaningPlan> for dyn CleaningPlanMapper {
             address: entity.address,
             cleaner_ids: entity.participant_ids,
             duties: entity.duties.iter().map(Self::map_duty_entity_to_dto).collect(),
-            start_date: entity.start_date
+            start_date: entity.start_date.to_rfc3339()
         }
     }
 }
@@ -38,8 +41,8 @@ impl dyn CleaningPlanMapper {
             dto.title.clone(),
             dto.todo_list.clone(),
             dto.img_src.clone(),
-            dto.repetition.clone(),
-            dto.offset.clone(),
+            TimeDuration::from_str(dto.repetition.clone()).expect("Unable to parse str to TimeDuration"),
+            TimeDuration::from_str(dto.offset.clone()).expect("Unable to parse str to TimeDuration"),
             dto.penalty.clone(),
         )
     }
@@ -50,8 +53,8 @@ impl dyn CleaningPlanMapper {
             title: entity.title.clone(),
             todo_list: entity.todo_list.clone(),
             img_src: entity.img_src.clone(),
-            repetition: entity.repetition.clone(),
-            offset: entity.offset.clone(),
+            repetition: entity.repetition.to_string(),
+            offset: entity.offset.to_string(),
             penalty: entity.penalty.clone(),
         }
     }

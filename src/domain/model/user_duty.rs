@@ -8,6 +8,7 @@ use crate::domain::model::user_tasks::UserTasks;
 #[non_exhaustive]
 pub struct UserDuty {
     pub id: String,
+    pub user_id: String,
     pub template_id: String,
     pub title: String,
     pub tasks: UserTasks,
@@ -21,6 +22,7 @@ impl UserDuty {
 
     pub fn new(
         id: String,
+        user_id: String,
         template_id: String,
         title: String,
         tasks: UserTasks,
@@ -31,6 +33,7 @@ impl UserDuty {
     ) -> Self {
         UserDuty {
             id,
+            user_id,
             template_id,
             title,
             tasks,

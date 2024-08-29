@@ -23,6 +23,11 @@ impl AuthService {
         AuthService { user_repository }
     }
 
+    pub async fn is_user_internal(&self, user_id: String) -> bool {
+        true
+        // TODO: implement real logic
+    }
+
     pub async fn get_user_by_email_and_password(
         &self,
         email: String,

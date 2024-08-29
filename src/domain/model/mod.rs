@@ -6,3 +6,4 @@ pub mod user_duty;
 pub mod duty_fulfilment;
 pub mod user_tasks;
 pub mod penalty;
+pub mod time_duration;

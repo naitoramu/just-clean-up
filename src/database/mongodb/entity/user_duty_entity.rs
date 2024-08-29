@@ -8,14 +8,26 @@ use crate::error::json_problem::JsonProblem;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserDutyEntity {
+
+    #[serde(rename = "_id")]
     pub id: ObjectId,
+
+    pub user_id: ObjectId,
+
     pub template_id: ObjectId,
+
     pub title: String,
+
     pub tasks: Vec<UserTaskEntity>,
+
     pub start_timestamp: i64,
+
     pub deadline_timestamp: i64,
+
     pub completion_marked: bool,
+
     pub completion_confirmed: bool,
+
     pub penalty: UserPenaltyEntity,
 }
 

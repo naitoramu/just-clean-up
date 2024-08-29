@@ -20,7 +20,9 @@ pub struct CleaningPlanEntity {
 
     pub duties: Vec<DutyEntity>,
 
-    pub start_date: u64,
+    pub start_date: i64,
+
+    pub status: String
 }
 
 impl From<CleaningPlanEntity> for CleaningPlan {

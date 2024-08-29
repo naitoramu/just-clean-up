@@ -11,10 +11,12 @@ use crate::error::json_problem::JsonProblem;
 pub struct UserDutyEntityMapper;
 
 impl Mapper<UserDuty, UserDutyEntity> for UserDutyEntityMapper {
+
     fn map_to_entity(domain_model: UserDuty) -> Result<UserDutyEntity, JsonProblem> {
         Ok(
             UserDutyEntity {
                 id: Self::str_to_object_id(&domain_model.id)?,
+                user_id: Self::str_to_object_id(&domain_model.user_id)?,
                 template_id: Self::str_to_object_id(&domain_model.template_id)?,
                 title: domain_model.title,
                 tasks: Self::map_domain_model_tasks_to_entity(domain_model.tasks)?,
@@ -34,6 +36,7 @@ impl Mapper<UserDuty, UserDutyEntity> for UserDutyEntityMapper {
     fn map_to_domain_model(entity: UserDutyEntity) -> UserDuty {
         UserDuty::new(
             entity.id.to_hex(),
+            entity.user_id.to_hex(),
             entity.template_id.to_hex(),
             entity.title,
             UserTasks::new(entity.tasks.iter().map(Self::map_entity_task_to_domain_task).collect()),

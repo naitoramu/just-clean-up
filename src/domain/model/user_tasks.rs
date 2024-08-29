@@ -11,6 +11,21 @@ impl UserTasks {
     ) -> Self {
         Self { tasks }
     }
+
+    pub fn from_template(tasks: &Vec<String>) -> UserTasks {
+        let mut user_tasks: Vec<UserTask> = Vec::new();
+
+        for task in tasks {
+            user_tasks.push(UserTask::new(
+                "".to_string(),
+                task.clone(),
+                Vec::new(),
+                Vec::new()
+            ));
+        }
+
+        Self::new(user_tasks)
+    }
 }
 
 #[derive(Clone)]
