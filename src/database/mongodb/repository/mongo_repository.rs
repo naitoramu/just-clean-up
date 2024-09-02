@@ -1,15 +1,9 @@
-use std::collections::HashMap;
-use std::marker::PhantomData;
-use std::ops::Add;
-use async_trait::async_trait;
 use futures::TryStreamExt;
-use log::debug;
-use mongodb::bson::{doc, to_document, Document};
 use mongodb::bson::oid::ObjectId;
+use mongodb::bson::{doc, to_document, Document};
 use mongodb::Collection;
+use std::marker::PhantomData;
 
-use crate::database::crud_repository::CrudRepository;
-use crate::database::read_repository::ReadRepository;
 use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::repository::ObjectIdMapper;
 use crate::domain::model::domain_model::DomainModel;

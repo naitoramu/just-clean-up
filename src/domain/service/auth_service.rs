@@ -1,15 +1,13 @@
-use std::collections::HashMap;
-use std::sync::Arc;
-use axum::http::HeaderValue;
-use chrono::{Duration, Utc};
-use log::trace;
-use crate::database::crud_repository::CrudRepository;
 use crate::database::user_repository::UserRepository;
 use crate::domain::model::user::User;
 use crate::domain::service::jwt_helper;
 use crate::domain::service::jwt_helper::{decode_jwt, JwtClaims};
 use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
+use axum::http::HeaderValue;
+use chrono::{Duration, Utc};
+use log::trace;
+use std::sync::Arc;
 
 #[non_exhaustive]
 pub struct AuthService {

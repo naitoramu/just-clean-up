@@ -1,5 +1,4 @@
 use crate::database::cleaning_plan_repository::CleaningPlanRepository;
-use crate::database::crud_repository::CrudRepository;
 use crate::database::user_repository::UserRepository;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::error::json_problem::JsonProblem;

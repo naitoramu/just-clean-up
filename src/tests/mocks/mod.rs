@@ -1,1 +1,1 @@
-pub mod crud_repository_mock;
+pub mod user_repository_mock;

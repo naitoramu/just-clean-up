@@ -1,13 +1,11 @@
 use crate::database::cleaning_plan_repository::CleaningPlanRepository;
-use crate::database::crud_repository::CrudRepository;
 use crate::database::mongodb::entity::cleaning_plan_entity::CleaningPlanEntity;
 use crate::database::mongodb::repository::mongo_repository::MongoRepository;
 use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
 use crate::error::json_problem::JsonProblem;
 use async_trait::async_trait;
-use mongodb::Database;
-use std::collections::HashMap;
 use mongodb::bson::doc;
+use mongodb::Database;
 
 pub struct CleaningPlanMongoRepository {
     repository: MongoRepository<CleaningPlan, CleaningPlanEntity>,

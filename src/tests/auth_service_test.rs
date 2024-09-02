@@ -5,7 +5,7 @@ use mongodb::bson::oid::ObjectId;
 mod auth_service_test {
     use super::*;
     use crate::domain::service::auth_service::AuthService;
-    use crate::tests::mocks::crud_repository_mock::CrudRepositoryMock;
+    use crate::tests::mocks::user_repository_mock::UserRepositoryMock;
     use std::sync::Arc;
     use crate::error::json_problems::JsonProblems;
 
@@ -14,8 +14,8 @@ mod auth_service_test {
     #[tokio::test]
     async fn returns_user_when_matching_email_and_password() {
         let test_user = mock_user();
-        let user_repository = CrudRepositoryMock::<User>::new();
-        user_repository.find_first_matching_fn.return_value(Ok(Some(test_user.clone())));
+        let user_repository = UserRepositoryMock::new();
+        user_repository.get_by_email_and_passwd_fn.return_value(Ok(Some(test_user.clone())));
 
         let auth_service = AuthService::new(Arc::new(user_repository));
         let result = auth_service.get_user_by_email_and_password(mock_user().email, mock_user().password).await;
@@ -25,8 +25,8 @@ mod auth_service_test {
 
     #[tokio::test]
     async fn returns_none_when_match_not_exists() {
-        let user_repository = CrudRepositoryMock::<User>::new();
-        user_repository.find_first_matching_fn.return_value(Ok(None));
+        let user_repository = UserRepositoryMock::new();
+        user_repository.get_by_email_and_passwd_fn.return_value(Ok(None));
 
         let auth_service = AuthService::new(Arc::new(user_repository));
         let result = auth_service.get_user_by_email_and_password(mock_user().email, mock_user().password).await;
@@ -37,8 +37,8 @@ mod auth_service_test {
     #[tokio::test]
     async fn returns_problem_when_error_occurred() {
         let json_problem = JsonProblems::resource_not_found("User", ObjectId::new().to_hex());
-        let user_repository = CrudRepositoryMock::<User>::new();
-        user_repository.find_first_matching_fn.return_value(Err(json_problem.clone()));
+        let user_repository = UserRepositoryMock::new();
+        user_repository.get_by_email_and_passwd_fn.return_value(Err(json_problem.clone()));
 
         let auth_service = AuthService::new(Arc::new(user_repository));
         let result = auth_service.get_user_by_email_and_password(mock_user().email, mock_user().password).await;

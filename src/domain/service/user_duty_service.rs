@@ -1,4 +1,5 @@
-use crate::database::crud_repository::CrudRepository;
+use crate::database::cleaning_plan_repository::CleaningPlanRepository;
+use crate::database::user_duty_repository::UserDutyRepository;
 use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
 use crate::domain::model::duty::Duty;
 use crate::domain::model::duty_fulfilment::DutyFulfilment;
@@ -9,8 +10,6 @@ use crate::error::json_problem::JsonProblem;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
-use crate::database::cleaning_plan_repository::CleaningPlanRepository;
-use crate::database::user_duty_repository::UserDutyRepository;
 
 pub struct UserDutyService {
     cleaning_plan_repository: Arc<dyn CleaningPlanRepository + Send + Sync>,

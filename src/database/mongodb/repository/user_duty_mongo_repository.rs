@@ -1,14 +1,12 @@
-use std::collections::HashMap;
-use crate::database::crud_repository::CrudRepository;
 use crate::database::mongodb::entity::user_duty_entity::UserDutyEntity;
 use crate::database::mongodb::repository::mongo_repository::MongoRepository;
+use crate::database::mongodb::repository::ObjectIdMapper;
 use crate::database::user_duty_repository::UserDutyRepository;
 use crate::domain::model::user_duty::UserDuty;
 use crate::error::json_problem::JsonProblem;
 use async_trait::async_trait;
 use mongodb::bson::doc;
 use mongodb::Database;
-use crate::database::mongodb::repository::ObjectIdMapper;
 
 pub struct UserDutyMongoRepository {
     repository: MongoRepository<UserDuty, UserDutyEntity>
