@@ -4,6 +4,9 @@ use mongodb::bson::oid::ObjectId;
 use crate::error::json_problem::JsonProblem;
 
 pub mod mongo_repository;
+pub mod user_mongo_repository;
+pub mod cleaning_plan_mongo_repository;
+pub mod user_duty_mongo_repository;
 
 struct ObjectIdMapper;
 impl ObjectIdMapper {

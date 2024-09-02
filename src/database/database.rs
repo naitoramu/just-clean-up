@@ -1,16 +1,11 @@
-use std::sync::Arc;
-use crate::database::crud_repository::CrudRepository;
-use crate::database::mongodb::entity::cleaning_plan_entity::CleaningPlanEntity;
-use crate::database::mongodb::entity::entity::MongoEntity;
-use crate::database::mongodb::entity::user_duty_entity::UserDutyEntity;
-use crate::database::mongodb::entity::user_entity::UserEntity;
+use crate::database::cleaning_plan_repository::CleaningPlanRepository;
 use crate::database::mongodb::mongo_database::MongoDatabase;
-use crate::database::mongodb::repository::mongo_repository::MongoRepository;
-use crate::domain::model::cleaning_plan::CleaningPlan;
-use crate::domain::model::domain_model::DomainModel;
-use crate::domain::model::user::User;
-use crate::domain::model::user_duty::UserDuty;
-use crate::error::json_problem::JsonProblem;
+use crate::database::mongodb::repository::cleaning_plan_mongo_repository::CleaningPlanMongoRepository;
+use crate::database::mongodb::repository::user_duty_mongo_repository::UserDutyMongoRepository;
+use crate::database::mongodb::repository::user_mongo_repository::UserMongoRepository;
+use crate::database::user_duty_repository::UserDutyRepository;
+use crate::database::user_repository::UserRepository;
+use std::sync::Arc;
 
 pub struct Database {
     mongo_database: Option<MongoDatabase>,
@@ -29,25 +24,24 @@ impl Database {
         }
     }
 
-    pub fn get_user_duty_repository(&self) -> Arc<dyn CrudRepository<UserDuty>> {
-        self.get_repository::<UserDutyEntity, UserDuty>()
+    pub fn get_user_duty_repository(&self) -> Arc<dyn UserDutyRepository + Send + Sync> {
+        Arc::new(UserDutyMongoRepository::new(
+            self.mongo_database.as_ref()
+                .expect("Database not initialized")
+                .get_connection(),
+        ))
     }
 
-    pub fn get_cleaning_plan_repository(&self) -> Arc<dyn CrudRepository<CleaningPlan>> {
-        self.get_repository::<CleaningPlanEntity, CleaningPlan>()
+    pub fn get_cleaning_plan_repository(&self) -> Arc<dyn CleaningPlanRepository + Send + Sync> {
+        Arc::new(CleaningPlanMongoRepository::new(
+            self.mongo_database.as_ref()
+                .expect("Database not initialized")
+                .get_connection(),
+        ))
     }
 
-    pub fn get_user_repository(&self) -> Arc<dyn CrudRepository<User>> {
-        self.get_repository::<UserEntity, User>()
-    }
-
-    fn get_repository<E, D>(&self) -> Arc<dyn CrudRepository<D>>
-    where
-        E: MongoEntity + Clone + TryFrom<D> + 'static,
-        D: DomainModel + Sync + Clone + From<E>,
-        <E as TryFrom<D>>::Error: Into<JsonProblem>,
-    {
-        Arc::new(MongoRepository::<E>::new(
+    pub fn get_user_repository(&self) -> Arc<dyn UserRepository + Send + Sync> {
+        Arc::new(UserMongoRepository::new(
             self.mongo_database.as_ref()
                 .expect("Database not initialized")
                 .get_connection(),

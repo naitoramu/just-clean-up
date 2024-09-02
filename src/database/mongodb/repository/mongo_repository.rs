@@ -1,9 +1,10 @@
 use std::collections::HashMap;
+use std::marker::PhantomData;
 use std::ops::Add;
 use async_trait::async_trait;
 use futures::TryStreamExt;
 use log::debug;
-use mongodb::bson::{doc, to_document};
+use mongodb::bson::{doc, to_document, Document};
 use mongodb::bson::oid::ObjectId;
 use mongodb::Collection;
 
@@ -16,26 +17,25 @@ use crate::error::json_problem::JsonProblem;
 use crate::error::json_problems::JsonProblems;
 
 #[derive(Clone)]
-pub struct MongoRepository<E: MongoEntity> {
+pub struct MongoRepository<D: DomainModel, E: MongoEntity> {
     collection: Collection<E>,
+    _marker: PhantomData<D>
 }
 
-impl<E> MongoRepository<E>
+impl<D, E> MongoRepository<D, E>
 where
-    E: MongoEntity,
+    D: DomainModel + Sync + Clone + From<E>,
+    E: MongoEntity + Clone + TryFrom<D>,
+    <E as TryFrom<D>>::Error: Into<JsonProblem>,
 {
     pub fn new(database: &mongodb::Database) -> Self {
-        MongoRepository { collection: database.collection(E::get_collection_name()) }
+        MongoRepository {
+            collection: database.collection(E::get_collection_name()),
+            _marker: PhantomData
+        }
     }
-}
 
-#[async_trait]
-impl<E, D> ReadRepository<D> for MongoRepository<E>
-where
-    E: MongoEntity + Clone + TryFrom<D>,
-    D: DomainModel + Clone + From<E>,
-{
-    async fn find_by_object_id(&self, id: ObjectId) -> Result<Option<D>, JsonProblem> {
+    pub async fn find_by_object_id(&self, id: ObjectId) -> Result<Option<D>, JsonProblem> {
         match self.collection.find_one(doc! { "_id": id }).await {
             Ok(Some(entity)) => Ok(Some(entity.into())),
             Ok(None) => Ok(None),
@@ -43,44 +43,36 @@ where
         }
     }
 
-    async fn find_first_matching(&self, filter: HashMap<String, String>) -> Result<Option<D>, JsonProblem> {
-        match self.collection.find_one(to_document(&filter).unwrap()).await {
+    pub async fn find_first_matching(&self, filter: Document) -> Result<Option<D>, JsonProblem> {
+        match self.collection.find_one(filter).await {
             Ok(Some(entity)) => Ok(Some(entity.into())),
             Ok(None) => Ok(None),
             Err(error) => Err(error.into())
         }
     }
 
-    async fn find_all_matching(&self, filter: HashMap<String, String>) -> Result<Vec<D>, JsonProblem> {
-        let mut filter_str = "".to_string();
-        for (key, value) in filter.clone() {
-            filter_str = filter_str + format!("({}, {})", key, value).as_str();
-        }
-        debug!("Fetching all documents matching filters '{}'", filter_str);
-        match self.collection.find(to_document(&filter).unwrap()).await {
+    pub async fn find_all_matching(&self, filter: Document) -> Result<Vec<D>, JsonProblem> {
+        // let mut filter_str = "".to_string();
+        // for (key, value) in filter.clone() {
+        //     filter_str = filter_str + format!("({}, {})", key, value).as_str();
+        // }
+        // debug!("Fetching all documents matching filters '{}'", filter_str);
+        match self.collection.find(filter).await {
             Ok(entities) => Ok(entities.try_collect::<Vec<E>>().await?.iter().map(|entity| entity.clone().into()).collect()),
             Err(error) => Err(error.into())
         }
     }
-}
 
-#[async_trait]
-impl<E, D> CrudRepository<D> for MongoRepository<E>
-where
-    E: MongoEntity + Clone + TryFrom<D>,
-    D: DomainModel + Sync + Clone + From<E>,
-    <E as TryFrom<D>>::Error: Into<JsonProblem>,
-{
-    async fn get_all(&self) -> Result<Vec<D>, JsonProblem> {
-        self.find_all_matching(HashMap::default()).await
+    pub async fn get_all(&self) -> Result<Vec<D>, JsonProblem> {
+        self.find_all_matching(doc! {}).await
     }
 
-    async fn get_by_id(&self, id: String) -> Result<Option<D>, JsonProblem> {
+    pub async fn get_by_id(&self, id: String) -> Result<Option<D>, JsonProblem> {
         let object_id = ObjectIdMapper::map_to_object_id(id.as_str())?;
         self.find_by_object_id(object_id).await
     }
 
-    async fn create(&self, model: &D) -> Result<D, JsonProblem> {
+    pub async fn create(&self, model: &D) -> Result<D, JsonProblem> {
         let entity: E = model.clone()
             .try_into()
             .map_err(Into::<JsonProblem>::into)?;
@@ -93,7 +85,7 @@ where
         }
     }
 
-    async fn update(&self, id: String, model: &D) -> Result<D, JsonProblem> {
+    pub async fn update(&self, id: String, model: &D) -> Result<D, JsonProblem> {
         let object_id = ObjectIdMapper::map_to_object_id(id.as_str())?;
         self.ensure_resource_exists(object_id).await?;
 
@@ -109,7 +101,7 @@ where
         }
     }
 
-    async fn delete(&self, id: String) -> Result<(), JsonProblem> {
+    pub async fn delete(&self, id: String) -> Result<(), JsonProblem> {
         let object_id = ObjectIdMapper::map_to_object_id(id.as_str())?;
         self.ensure_resource_exists(object_id).await?;
 

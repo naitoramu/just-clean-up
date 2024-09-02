@@ -9,39 +9,39 @@ use crate::error::json_problem::JsonProblem;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::database::cleaning_plan_repository::CleaningPlanRepository;
+use crate::database::user_duty_repository::UserDutyRepository;
 
 pub struct UserDutyService {
-    cleaning_plan_repository: Arc<dyn CrudRepository<CleaningPlan> + Send + Sync>,
-    user_duty_repository: Arc<dyn CrudRepository<UserDuty> + Send + Sync>,
+    cleaning_plan_repository: Arc<dyn CleaningPlanRepository + Send + Sync>,
+    user_duty_repository: Arc<dyn UserDutyRepository + Send + Sync>,
 }
 
 impl UserDutyService {
 
     pub fn new(
-        cleaning_plan_repository: Arc<dyn CrudRepository<CleaningPlan>>,
-        user_duty_repository: Arc<dyn CrudRepository<UserDuty>>,
+        cleaning_plan_repository: Arc<dyn CleaningPlanRepository + Send + Sync>,
+        user_duty_repository: Arc<dyn UserDutyRepository + Send + Sync>,
     ) -> Self {
         UserDutyService { cleaning_plan_repository, user_duty_repository }
     }
 
     pub async fn get_all_user_duties(&self, user_id: String) -> Result<Vec<UserDuty>, JsonProblem> {
         // TODO: matching String and ObjectID in the database does not work, make better repositories implementation
-        self.user_duty_repository.find_all_matching(HashMap::from([
-            ("user_id".to_string(), user_id),
-        ])).await
+        self.user_duty_repository.get_all_user_duties(user_id).await
     }
 
     pub async fn make_schedules(&self) -> Result<Vec<String>, JsonProblem> {
-        let plans_to_schedule = self.cleaning_plan_repository.find_all_matching(HashMap::from([
-            ("status".to_string(), CleaningPlanStatus::PendingDutyAssignment.to_string()),
-        ])).await?;
+        let plans_to_schedule = self.cleaning_plan_repository.get_plans_with_status(
+            CleaningPlanStatus::PendingDutyAssignment
+        ).await?;
 
         let mut created_user_duty_ids: Vec<String> = Vec::new();
 
         for mut plan in plans_to_schedule {
             created_user_duty_ids.append(&mut self.create_user_duties(plan.clone()).await?);
             plan.status = CleaningPlanStatus::Scheduled;
-            self.cleaning_plan_repository.update(plan.id.clone(), &plan).await?;
+            self.cleaning_plan_repository.update_plan(plan.id.clone(), &plan).await?;
         }
 
         Ok(created_user_duty_ids)
@@ -62,7 +62,7 @@ impl UserDutyService {
                 DutyFulfilment::new(false, false),
                 UserPenalty::new("".to_string(), assigned_duty.penalty.clone(), false),
             );
-            created_duties_ids.push(self.user_duty_repository.create(&user_duty).await?.id);
+            created_duties_ids.push(self.user_duty_repository.create_user_duty(&user_duty).await?.id);
         }
         Ok(created_duties_ids)
     }
@@ -96,10 +96,11 @@ impl UserDutyService {
     }
 
     async fn get_last_completed_by_user_duty_timestamp(&self, duty_id: String, user_id: String) -> Result<DateTime<Utc>, JsonProblem> {
-        let user_duties = self.user_duty_repository.find_all_matching(HashMap::from([
-            ("template_id".to_string(), duty_id),
-            ("user_id".to_string(), user_id),
-        ])).await?;
+        let user_duties = self.user_duty_repository.get_user_duties_by_duty_template(duty_id, user_id).await?;
+        //     find_all_matching(HashMap::from([
+        //     ("template_id".to_string(), duty_id),
+        //     ("user_id".to_string(), user_id),
+        // ])).await?;
 
         let mut latest_timestamp = DateTime::from_timestamp(0, 0).unwrap();
         for duty in user_duties {

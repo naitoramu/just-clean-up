@@ -4,6 +4,7 @@ use axum::http::HeaderValue;
 use chrono::{Duration, Utc};
 use log::trace;
 use crate::database::crud_repository::CrudRepository;
+use crate::database::user_repository::UserRepository;
 use crate::domain::model::user::User;
 use crate::domain::service::jwt_helper;
 use crate::domain::service::jwt_helper::{decode_jwt, JwtClaims};
@@ -12,13 +13,13 @@ use crate::error::json_problems::JsonProblems;
 
 #[non_exhaustive]
 pub struct AuthService {
-    user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
+    user_repository: Arc<dyn UserRepository + Send + Sync>,
 }
 
 impl AuthService {
 
     pub fn new(
-        user_repository: Arc<dyn CrudRepository<User> + Send + Sync>,
+        user_repository: Arc<dyn UserRepository + Send + Sync>,
     ) -> Self {
         AuthService { user_repository }
     }
@@ -34,12 +35,7 @@ impl AuthService {
         password: String
     ) -> Result<Option<User>, JsonProblem> {
 
-        self.user_repository.find_first_matching(
-            HashMap::from([
-                ("email".to_string(), email),
-                ("password".to_string(), password)
-            ])
-        ).await
+        self.user_repository.get_user_by_email_and_passwd(email, password).await
     }
 
     pub fn create_jwt_for_user(&self, user_id: String) -> Result<String, JsonProblem> {
@@ -96,7 +92,7 @@ impl AuthService {
         &self,
         jwt_claims: JwtClaims,
     ) -> Result<User, JsonProblem> {
-        match self.user_repository.get_by_id(jwt_claims.user_id).await? {
+        match self.user_repository.get_user_by_id(jwt_claims.user_id).await? {
             Some(user) => Ok(user),
             None => Err(JsonProblems::unauthorized("Invalid authentication credentials".to_string())),
         }
