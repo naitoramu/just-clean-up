@@ -1,7 +1,7 @@
 use crate::database::cleaning_plan_repository::CleaningPlanRepository;
 use crate::database::user_duty_repository::UserDutyRepository;
 use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
-use crate::domain::model::duty::Duty;
+use crate::domain::model::duty::{Duties, Duty};
 use crate::domain::model::duty_fulfilment::DutyFulfilment;
 use crate::domain::model::user_duty::UserDuty;
 use crate::domain::model::user_penalty::UserPenalty;
@@ -10,6 +10,7 @@ use crate::error::json_problem::JsonProblem;
 use chrono::{DateTime, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
+use log::debug;
 
 pub struct UserDutyService {
     cleaning_plan_repository: Arc<dyn CleaningPlanRepository + Send + Sync>,
@@ -47,30 +48,34 @@ impl UserDutyService {
     }
 
     async fn create_user_duties(&self, cleaning_plan: CleaningPlan) -> Result<Vec<String>, JsonProblem> {
-        let user_to_duty = self.assign_duties_to_users(cleaning_plan.participant_ids.clone(), &cleaning_plan.duties).await?;
         let mut created_duties_ids: Vec<String> = Vec::new();
-        for (assigned_duty, user_id) in user_to_duty {
-            let user_duty = UserDuty::new(
-                "".to_string(),
-                user_id,
-                assigned_duty.id.clone(),
-                assigned_duty.title.clone(),
-                UserTasks::from_template(&assigned_duty.todo_list),
-                Utc::now() + assigned_duty.repetition.time_delta - assigned_duty.offset.time_delta,
-                Utc::now() + assigned_duty.repetition.time_delta + assigned_duty.offset.time_delta,
-                DutyFulfilment::new(false, false),
-                UserPenalty::new("".to_string(), assigned_duty.penalty.clone(), false),
-            );
-            created_duties_ids.push(self.user_duty_repository.create_user_duty(&user_duty).await?.id);
+
+        for routine in cleaning_plan.routines.vec() {
+            let user_to_duty = self.assign_duties_to_users(cleaning_plan.participant_ids.clone(), routine.duties).await?;
+            for (assigned_duty, user_id) in user_to_duty {
+                let user_duty = UserDuty::new(
+                    "".to_string(),
+                    user_id,
+                    assigned_duty.id.clone(),
+                    assigned_duty.title.clone(),
+                    UserTasks::from_template(&assigned_duty.todo_list),
+                    Utc::now() + routine.repetition.time_delta - routine.offset.time_delta,
+                    Utc::now() + routine.repetition.time_delta + routine.offset.time_delta,
+                    DutyFulfilment::new(false, false),
+                    UserPenalty::new("".to_string(), assigned_duty.penalty.clone(), false),
+                );
+                created_duties_ids.push(self.user_duty_repository.create_user_duty(&user_duty).await?.id);
+            }
         }
+
         Ok(created_duties_ids)
     }
 
-    async fn assign_duties_to_users<'a>(&self, user_ids: Vec<String>, duties: &'a Vec<Duty>) -> Result<HashMap<&'a Duty, String>, JsonProblem> {
-        let mut duty_to_user_id: HashMap<&Duty, String> = HashMap::new();
+    async fn assign_duties_to_users<'a>(&self, user_ids: Vec<String>, duties: Duties) -> Result<HashMap<Duty, String>, JsonProblem> {
+        let mut duty_to_user_id: HashMap<Duty, String> = HashMap::new();
         let mut unassigned_user_ids: Vec<String> = user_ids.clone();
 
-        for duty in duties {
+        for duty in duties.vec() {
             if unassigned_user_ids.is_empty() {
                 unassigned_user_ids = user_ids.clone();
             }
@@ -95,11 +100,8 @@ impl UserDutyService {
     }
 
     async fn get_last_completed_by_user_duty_timestamp(&self, duty_id: String, user_id: String) -> Result<DateTime<Utc>, JsonProblem> {
-        let user_duties = self.user_duty_repository.get_user_duties_by_duty_template(duty_id, user_id).await?;
-        //     find_all_matching(HashMap::from([
-        //     ("template_id".to_string(), duty_id),
-        //     ("user_id".to_string(), user_id),
-        // ])).await?;
+        let user_duties = self.user_duty_repository.get_user_duties_by_duty_template(user_id.clone(), duty_id).await?;
+        debug!("Fetched {} duties for user '{}': {:?}", user_duties.len(), user_id, user_duties);
 
         let mut latest_timestamp = DateTime::from_timestamp(0, 0).unwrap();
         for duty in user_duties {

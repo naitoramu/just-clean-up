@@ -2,16 +2,17 @@ use chrono::DateTime;
 use mongodb::bson::oid::ObjectId;
 use crate::database::mongodb::entity::cleaning_plan_entity::CleaningPlanEntity;
 use crate::database::mongodb::entity::duty_entity::DutyEntity;
+use crate::database::mongodb::entity::routine_entity::RoutineEntity;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
-use crate::domain::model::duty::Duty;
+use crate::domain::model::duty::{Duties, Duty};
+use crate::domain::model::routines::{Routine, Routines};
 use crate::domain::model::time_duration::TimeDuration;
 use crate::error::json_problem::JsonProblem;
 
 pub struct CleaningPlanEntityMapper;
 
 impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
-
     fn map_to_entity(domain_model: CleaningPlan) -> Result<CleaningPlanEntity, JsonProblem> {
         Ok(CleaningPlanEntity {
             id: Self::str_to_object_id(&domain_model.id)?,
@@ -20,11 +21,9 @@ impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
             participant_ids: domain_model.participant_ids.iter()
                 .map(Self::str_to_object_id)
                 .collect::<Result<Vec<ObjectId>, JsonProblem>>()?,
-            duties: domain_model.duties.iter()
-                .map(Self::map_duty_domain_model_to_entity)
-                .collect::<Result<Vec<DutyEntity>, JsonProblem>>()?,
+            routines: Self::map_domain_routines(domain_model.routines)?,
             start_date: domain_model.start_date.timestamp(),
-            status: domain_model.status.to_string()
+            status: domain_model.status.to_string(),
         })
     }
 
@@ -34,39 +33,73 @@ impl Mapper<CleaningPlan, CleaningPlanEntity> for CleaningPlanEntityMapper {
             entity.title,
             entity.address,
             entity.participant_ids.iter().map(|user_id| user_id.to_hex()).collect(),
-            entity.duties.iter().map(Self::map_duty_entity_to_domain_model).collect(),
+            Self::map_entity_routines(entity.routines),
             DateTime::from_timestamp(entity.start_date, 0)
                 .expect(format!("Failed to parse timestamp '{}'", entity.start_date).as_str()),
-            CleaningPlanStatus::from_string(entity.status)
+            CleaningPlanStatus::from_string(entity.status),
         )
     }
 }
 
 impl CleaningPlanEntityMapper {
+    fn map_domain_routines(routines: Routines) -> Result<Vec<RoutineEntity>, JsonProblem> {
+        let mut mapped_routines = Vec::new();
 
-    fn map_duty_domain_model_to_entity(domain_model_ref: &Duty) -> Result<DutyEntity, JsonProblem> {
-        let domain_model = domain_model_ref.clone();
-        Ok(DutyEntity {
-            id: Self::str_to_object_id(&domain_model.id)?,
-            title: domain_model.title,
-            todo_list: domain_model.todo_list,
-            img_src: domain_model.img_src,
-            repetition: domain_model.repetition.to_string(),
-            offset: domain_model.offset.to_string(),
-            penalty: domain_model.penalty,
-        })
+        for routine in routines.vec() {
+            mapped_routines.push(RoutineEntity {
+                repetition: routine.repetition.to_string(),
+                offset: routine.offset.to_string(),
+                duties: Self::map_domain_duties(routine.duties)?,
+            });
+        }
+
+        Ok(mapped_routines)
     }
 
-    fn map_duty_entity_to_domain_model(entity_ref: &DutyEntity) -> Duty {
-        let entity = entity_ref.clone();
-        Duty::new(
-            entity.id.to_hex(),
-            entity.title,
-            entity.todo_list,
-            entity.img_src,
-            TimeDuration::from_str(entity.repetition).expect("Unable to parse str to TimeDuration"),
-            TimeDuration::from_str(entity.offset).expect("Unable to parse str to TimeDuration"),
-            entity.penalty,
-        )
+    fn map_domain_duties(duties: Duties) -> Result<Vec<DutyEntity>, JsonProblem> {
+        let mut mapped_duties = Vec::new();
+
+        for duty in duties.vec() {
+            mapped_duties.push(DutyEntity {
+                id: Self::str_to_object_id(&duty.id)?,
+                title: duty.title,
+                todo_list: duty.todo_list,
+                img_src: duty.img_src,
+                penalty: duty.penalty,
+            });
+        }
+
+        Ok(mapped_duties)
+    }
+
+    fn map_entity_routines(routines: Vec<RoutineEntity>) -> Routines {
+        let mut mapped_routines = Vec::new();
+
+        for routine in routines {
+            mapped_routines.push(Routine::new(
+                // TODO change expects to falible mappers
+                TimeDuration::from_str(routine.repetition).expect("Unable to parse str to TimeDuration"),
+                TimeDuration::from_str(routine.offset).expect("Unable to parse str to TimeDuration"),
+                Self::map_entity_duties(routine.duties),
+            ))
+        }
+
+        Routines::new(mapped_routines)
+    }
+
+    fn map_entity_duties(duties: Vec<DutyEntity>) -> Duties {
+        let mut mapped_duties = Vec::new();
+
+        for duty in duties {
+            mapped_duties.push(Duty::new(
+                duty.id.to_hex(),
+                duty.title,
+                duty.todo_list,
+                duty.img_src,
+                duty.penalty,
+            ))
+        }
+
+        Duties::new(mapped_duties)
     }
 }

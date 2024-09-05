@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 pub struct UserTasks {
     pub tasks: Vec<UserTask>
@@ -28,7 +28,7 @@ impl UserTasks {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 pub struct UserTask {
     pub id: String,

@@ -3,3 +3,4 @@ pub mod duty_entity;
 pub mod user_entity;
 pub mod entity;
 pub mod user_duty_entity;
+pub mod routine_entity;

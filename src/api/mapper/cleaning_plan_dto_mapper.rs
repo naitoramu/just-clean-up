@@ -1,23 +1,23 @@
 use chrono::DateTime;
-use crate::api::dto::cleaning_plan_dto::{CleaningPlanDto, DutyDto};
+use crate::api::dto::cleaning_plan_dto::{CleaningPlanDto, DutyDto, RoutineDto};
 use crate::domain::model::cleaning_plan::{CleaningPlan, CleaningPlanStatus};
-use crate::domain::model::duty::Duty;
+use crate::domain::model::duty::{Duties, Duty};
 use crate::api::mapper::dto_mapper::DtoMapper;
+use crate::domain::model::routines::{Routine, Routines};
 use crate::domain::model::time_duration::TimeDuration;
 
 pub trait CleaningPlanMapper {}
 
 impl DtoMapper<CleaningPlanDto, CleaningPlan> for dyn CleaningPlanMapper {
-
     fn map_to_domain_model(dto: CleaningPlanDto) -> CleaningPlan {
         CleaningPlan::new(
             dto.id,
             dto.title,
             dto.address,
             dto.cleaner_ids,
-            dto.duties.iter().map(Self::map_duty_dto_to_entity).collect(),
+            Self::map_dto_routines(dto.routines),
             DateTime::parse_from_rfc3339(dto.start_date.as_str()).expect("Unable to parse str to DateTime").to_utc(),
-            CleaningPlanStatus::PendingDutyAssignment
+            CleaningPlanStatus::PendingDutyAssignment,
         )
     }
 
@@ -27,35 +27,70 @@ impl DtoMapper<CleaningPlanDto, CleaningPlan> for dyn CleaningPlanMapper {
             title: entity.title,
             address: entity.address,
             cleaner_ids: entity.participant_ids,
-            duties: entity.duties.iter().map(Self::map_duty_entity_to_dto).collect(),
-            start_date: entity.start_date.to_rfc3339()
+            routines: Self::map_domain_routines(entity.routines),
+            start_date: entity.start_date.to_rfc3339(),
         }
     }
 }
 
 impl dyn CleaningPlanMapper {
+    fn map_dto_routines(routines: Vec<RoutineDto>) -> Routines {
+        let mut mapped_routines = Vec::new();
 
-    fn map_duty_dto_to_entity(dto: &DutyDto) -> Duty {
-        Duty::new(
-            dto.id.clone(),
-            dto.title.clone(),
-            dto.todo_list.clone(),
-            dto.img_src.clone(),
-            TimeDuration::from_str(dto.repetition.clone()).expect("Unable to parse str to TimeDuration"),
-            TimeDuration::from_str(dto.offset.clone()).expect("Unable to parse str to TimeDuration"),
-            dto.penalty.clone(),
-        )
+        for routine in routines {
+            mapped_routines.push(Routine::new(
+                TimeDuration::from_str(routine.repetition).expect("Unable to parse str to TimeDuration"),
+                TimeDuration::from_str(routine.offset).expect("Unable to parse str to TimeDuration"),
+                Self::map_dto_duties(routine.duties),
+            ))
+        }
+
+        Routines::new(mapped_routines)
     }
 
-    fn map_duty_entity_to_dto(entity: &Duty) -> DutyDto {
-        DutyDto {
-            id: entity.id.clone(),
-            title: entity.title.clone(),
-            todo_list: entity.todo_list.clone(),
-            img_src: entity.img_src.clone(),
-            repetition: entity.repetition.to_string(),
-            offset: entity.offset.to_string(),
-            penalty: entity.penalty.clone(),
+    fn map_dto_duties(duties: Vec<DutyDto>) -> Duties {
+        let mut mapped_duties = Vec::new();
+
+        for duty in duties {
+            mapped_duties.push(Duty::new(
+                duty.id,
+                duty.title,
+                duty.todo_list,
+                duty.img_src,
+                duty.penalty,
+            ))
         }
+
+        Duties::new(mapped_duties)
+    }
+
+    fn map_domain_routines(routines: Routines) -> Vec<RoutineDto> {
+        let mut mapped_routines = Vec::new();
+
+        for routine in routines.vec() {
+            mapped_routines.push(RoutineDto {
+                repetition: routine.repetition.to_string(),
+                offset: routine.offset.to_string(),
+                duties: Self::map_domain_duties(routine.duties),
+            })
+        }
+
+        mapped_routines
+    }
+
+    fn map_domain_duties(duties: Duties) -> Vec<DutyDto> {
+        let mut mapped_duties = Vec::new();
+
+        for duty in duties.vec() {
+            mapped_duties.push(DutyDto {
+                id: duty.id,
+                title: duty.title,
+                todo_list: duty.todo_list,
+                img_src: duty.img_src,
+                penalty: duty.penalty,
+            })
+        }
+
+        mapped_duties
     }
 }

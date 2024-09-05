@@ -7,3 +7,4 @@ pub mod duty_fulfilment;
 pub mod user_tasks;
 pub mod user_penalty;
 pub mod time_duration;
+pub mod routines;

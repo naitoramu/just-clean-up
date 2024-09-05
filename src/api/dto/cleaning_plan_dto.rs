@@ -17,9 +17,20 @@ pub struct CleaningPlanDto {
 
     pub cleaner_ids: Vec<String>,
 
-    pub duties: Vec<DutyDto>,
+    pub routines: Vec<RoutineDto>,
 
     pub start_date: String
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RoutineDto {
+
+    pub repetition: String,
+
+    pub offset: String,
+
+    pub duties: Vec<DutyDto>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -35,10 +46,6 @@ pub struct DutyDto {
 
     #[serde(skip_deserializing)]
     pub img_src: Option<String>,
-
-    pub repetition: String,
-
-    pub offset: String,
 
     pub penalty: String,
 }

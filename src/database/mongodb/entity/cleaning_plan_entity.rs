@@ -1,11 +1,11 @@
-use mongodb::bson::oid::ObjectId;
-use serde::{Deserialize, Serialize};
-use crate::database::mongodb::entity::duty_entity::DutyEntity;
 use crate::database::mongodb::entity::entity::MongoEntity;
 use crate::database::mongodb::mapper::cleaning_plan_entity_mapper::CleaningPlanEntityMapper;
 use crate::database::mongodb::mapper::mapper::Mapper;
 use crate::domain::model::cleaning_plan::CleaningPlan;
 use crate::error::json_problem::JsonProblem;
+use mongodb::bson::oid::ObjectId;
+use serde::{Deserialize, Serialize};
+use crate::database::mongodb::entity::routine_entity::RoutineEntity;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct CleaningPlanEntity {
@@ -18,7 +18,7 @@ pub struct CleaningPlanEntity {
 
     pub participant_ids: Vec<ObjectId>,
 
-    pub duties: Vec<DutyEntity>,
+    pub routines: Vec<RoutineEntity>,
 
     pub start_date: i64,
 

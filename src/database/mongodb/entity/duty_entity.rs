@@ -14,10 +14,6 @@ pub struct DutyEntity {
 
     pub img_src: Option<String>,
 
-    pub repetition: String,
-
-    pub offset: String,
-
     pub penalty: String,
 }
 

@@ -4,7 +4,7 @@ use crate::domain::model::duty_fulfilment::DutyFulfilment;
 use crate::domain::model::user_penalty::UserPenalty;
 use crate::domain::model::user_tasks::UserTasks;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 pub struct UserDuty {
     pub id: String,

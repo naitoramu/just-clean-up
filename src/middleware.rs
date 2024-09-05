@@ -15,7 +15,7 @@ pub async fn error_handling_middleware(
     let response = next.run(req).await;
 
     if response.status().as_u16() < 400 {
-        return response
+        return response;
     }
 
     ErrorMapper::map_response_to_json_problem_response(response).await

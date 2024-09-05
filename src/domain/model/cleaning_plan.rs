@@ -1,6 +1,6 @@
-use chrono::{DateTime, Utc};
-use crate::domain::model::duty::Duty;
 use crate::domain::model::domain_model::DomainModel;
+use crate::domain::model::routines::Routines;
+use chrono::{DateTime, Utc};
 
 #[derive(Clone)]
 #[non_exhaustive]
@@ -14,7 +14,7 @@ pub struct CleaningPlan {
 
     pub participant_ids: Vec<String>,
 
-    pub duties: Vec<Duty>,
+    pub routines: Routines,
 
     pub start_date: DateTime<Utc>,
 
@@ -27,11 +27,11 @@ impl CleaningPlan {
         title: String,
         address: String,
         participant_ids: Vec<String>,
-        duties: Vec<Duty>,
+        routines: Routines,
         start_date: DateTime<Utc>,
         status: CleaningPlanStatus,
     ) -> Self {
-        CleaningPlan { id, title, address, participant_ids, duties, start_date, status }
+        CleaningPlan { id, title, address, participant_ids, routines, start_date, status }
     }
 }
 
