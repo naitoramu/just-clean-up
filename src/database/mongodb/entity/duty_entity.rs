@@ -1,3 +1,4 @@
+use chrono::Utc;
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use crate::database::mongodb::entity::entity::MongoEntity;
@@ -15,12 +16,19 @@ pub struct DutyEntity {
     pub img_src: Option<String>,
 
     pub penalty: String,
+
+    pub creation_timestamp: i64,
 }
 
 impl MongoEntity for DutyEntity {
 
     fn with_id(mut self, object_id: ObjectId) -> Self {
         self.id = object_id;
+        self
+    }
+
+    fn with_creation_time(mut self) -> Self {
+        self.creation_timestamp = Utc::now().timestamp();
         self
     }
 

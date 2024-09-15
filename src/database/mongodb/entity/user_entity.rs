@@ -26,6 +26,10 @@ impl MongoEntity for UserEntity {
         self
     }
 
+    fn with_creation_time(mut self) -> Self {
+        self
+    }
+
     fn get_collection_name() -> &'static str {
         "users"
     }

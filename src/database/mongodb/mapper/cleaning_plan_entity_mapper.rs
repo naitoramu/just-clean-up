@@ -66,6 +66,7 @@ impl CleaningPlanEntityMapper {
                 todo_list: duty.todo_list,
                 img_src: duty.img_src,
                 penalty: duty.penalty,
+                creation_timestamp: duty.creation_time.timestamp()
             });
         }
 
@@ -77,7 +78,7 @@ impl CleaningPlanEntityMapper {
 
         for routine in routines {
             mapped_routines.push(Routine::new(
-                // TODO change expects to falible mappers
+                // TODO change expects to failable mappers
                 TimeDuration::from_str(routine.repetition).expect("Unable to parse str to TimeDuration"),
                 TimeDuration::from_str(routine.offset).expect("Unable to parse str to TimeDuration"),
                 Self::map_entity_duties(routine.duties),
@@ -97,6 +98,8 @@ impl CleaningPlanEntityMapper {
                 duty.todo_list,
                 duty.img_src,
                 duty.penalty,
+                DateTime::from_timestamp(duty.creation_timestamp, 0)
+                    .expect(format!("Failed to parse timestamp '{}'", duty.creation_timestamp).as_str()),
             ))
         }
 

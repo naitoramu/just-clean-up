@@ -52,6 +52,10 @@ impl MongoEntity for UserDutyEntity{
         self
     }
 
+    fn with_creation_time(mut self) -> Self {
+        self
+    }
+
     fn get_collection_name() -> &'static str {
         "user_duties"
     }

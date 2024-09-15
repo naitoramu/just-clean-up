@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+
 #[derive(Clone, Hash, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct Duties {
@@ -13,6 +15,11 @@ impl Duties {
     pub fn vec(self) -> Vec<Duty> {
         self.duties
     }
+
+    pub fn sort_by_creation_time(mut self) -> Self {
+        self.duties.sort_by(|a, b| a.creation_time.cmp(&b.creation_time));
+        self
+    }
 }
 
 #[derive(Clone, Hash, Eq, PartialEq)]
@@ -27,6 +34,8 @@ pub struct Duty {
     pub img_src: Option<String>,
 
     pub penalty: String,
+
+    pub creation_time: DateTime<Utc>
 }
 
 impl Duty {
@@ -36,7 +45,18 @@ impl Duty {
         todo_list: Vec<String>,
         img_src: Option<String>,
         penalty: String,
+        creation_time: DateTime<Utc>
     ) -> Self {
-        Duty { id, title, todo_list, img_src, penalty }
+        Duty { id, title, todo_list, img_src, penalty, creation_time }
+    }
+
+    pub fn without_creation_time(
+        id: String,
+        title: String,
+        todo_list: Vec<String>,
+        img_src: Option<String>,
+        penalty: String
+    ) -> Self {
+        Duty { id, title, todo_list, img_src, penalty, creation_time: Utc::now() }
     }
 }

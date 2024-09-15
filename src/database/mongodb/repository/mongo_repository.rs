@@ -71,7 +71,7 @@ where
             .try_into()
             .map_err(Into::<JsonProblem>::into)?;
 
-        match self.collection.insert_one(entity).await {
+        match self.collection.insert_one(entity.with_creation_time()).await {
             Ok(insert_result) => Ok(self.find_by_object_id(
                 insert_result.inserted_id.as_object_id().unwrap()
             ).await?.unwrap()),

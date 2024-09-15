@@ -52,12 +52,12 @@ impl dyn CleaningPlanMapper {
         let mut mapped_duties = Vec::new();
 
         for duty in duties {
-            mapped_duties.push(Duty::new(
+            mapped_duties.push(Duty::without_creation_time(
                 duty.id,
                 duty.title,
                 duty.todo_list,
                 duty.img_src,
-                duty.penalty,
+                duty.penalty
             ))
         }
 

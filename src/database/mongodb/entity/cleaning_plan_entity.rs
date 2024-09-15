@@ -46,6 +46,10 @@ impl MongoEntity for CleaningPlanEntity {
         self
     }
 
+    fn with_creation_time(mut self) -> Self {
+        self
+    }
+
     fn get_collection_name() -> &'static str {
         "cleaning_plans"
     }
