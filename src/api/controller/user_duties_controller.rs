@@ -17,10 +17,10 @@ pub fn routes(app_context: &AppContext) -> Router {
 }
 
 async fn get_user_duties(
-    Path(use_id): Path<String>,
+    Path(user_id): Path<String>,
     State(user_duty_service): State<Arc<UserDutyService>>,
 ) -> Result<Json<Vec<UserDutyDto>>, JsonProblem> {
-    let duties = user_duty_service.get_all_user_duties(use_id).await?;
+    let duties = user_duty_service.get_all_user_duties(user_id).await?;
 
     Ok(Json(map_to_dtos(duties)))
 }

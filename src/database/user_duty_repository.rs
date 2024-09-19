@@ -14,7 +14,7 @@ pub trait UserDutyRepository {
 
     async fn create_user_duty(&self, user_duty: &UserDuty) -> Result<UserDuty, JsonProblem>;
 
-    async fn update_user_duty(&self, id: String, user: &UserDuty) -> Result<UserDuty, JsonProblem>;
+    async fn update_user_duty(&self, id: String, user_duty: &UserDuty) -> Result<UserDuty, JsonProblem>;
 
     async fn delete_user_duty(&self, id: String) -> Result<(), JsonProblem>;
 }

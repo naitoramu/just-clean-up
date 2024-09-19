@@ -46,6 +46,11 @@ impl UserDuty {
 }
 
 impl DomainModel for UserDuty {
+
+    fn id(&self) -> String {
+        self.id.clone()
+    }
+
     fn get_resource_name() -> &'static str {
         "User Duty"
     }

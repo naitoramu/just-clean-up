@@ -21,6 +21,11 @@ impl User {
 }
 
 impl DomainModel for User {
+
+    fn id(&self) -> String {
+        self.id.clone()
+    }
+
     fn get_resource_name() -> &'static str {
         "User"
     }

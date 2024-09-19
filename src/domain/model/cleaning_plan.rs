@@ -36,6 +36,11 @@ impl CleaningPlan {
 }
 
 impl DomainModel for CleaningPlan {
+
+    fn id(&self) -> String {
+        self.id.clone()
+    }
+
     fn get_resource_name() -> &'static str {
         "Cleaning Plan"
     }

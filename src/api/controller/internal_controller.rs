@@ -20,10 +20,14 @@ async fn make_schedules(
     State((auth_service, user_duty_service)): State<(Arc<AuthService>, Arc<UserDutyService>)>,
     Extension(user): Extension<User>,
 ) -> Result<Json<Vec<String>>, JsonProblem> {
-
     if !auth_service.is_user_internal(user.id).await {
-        return Err(JsonProblems::forbidden())
+        return Err(JsonProblems::forbidden());
     }
 
-    Ok(Json(user_duty_service.make_schedules().await?))
+    Ok(Json(
+        user_duty_service.make_schedules().await?
+            .iter()
+            .map(|d| d.id.clone())
+            .collect()
+    ))
 }

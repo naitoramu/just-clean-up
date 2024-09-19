@@ -7,10 +7,10 @@ use crate::domain::model::user_duty::UserDuty;
 use crate::domain::model::user_penalty::UserPenalty;
 use crate::domain::model::user_tasks::UserTasks;
 use crate::error::json_problem::JsonProblem;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, TimeDelta, Utc};
 use std::collections::HashMap;
 use std::sync::Arc;
-use log::debug;
+use log::{debug, trace};
 use crate::domain::model::routines::Routine;
 
 pub struct UserDutyService {
@@ -31,60 +31,64 @@ impl UserDutyService {
         self.user_duty_repository.get_all_user_duties(user_id).await
     }
 
-    pub async fn make_schedules(&self) -> Result<Vec<String>, JsonProblem> {
+    pub async fn make_schedules(&self) -> Result<Vec<UserDuty>, JsonProblem> {
         let plans_to_schedule = self.cleaning_plan_repository.get_plans_with_status(
             CleaningPlanStatus::PendingDutyAssignment
         ).await?;
 
-        let mut created_user_duty_ids: Vec<String> = Vec::new();
+        let mut created_user_duties: Vec<UserDuty> = Vec::new();
 
         for mut plan in plans_to_schedule {
-            created_user_duty_ids.append(&mut self.create_user_duties(plan.clone()).await?);
+            created_user_duties.append(&mut self.create_user_duties(plan.clone()).await?);
             plan.status = CleaningPlanStatus::Scheduled;
             self.cleaning_plan_repository.update_plan(plan.id.clone(), &plan).await?;
         }
 
-        Ok(created_user_duty_ids)
+        Ok(created_user_duties)
     }
 
-    async fn create_user_duties(&self, cleaning_plan: CleaningPlan) -> Result<Vec<String>, JsonProblem> {
-        let mut created_duties_ids: Vec<String> = Vec::new();
+    async fn create_user_duties(&self, cleaning_plan: CleaningPlan) -> Result<Vec<UserDuty>, JsonProblem> {
+        let mut created_duties: Vec<UserDuty> = Vec::new();
 
         for routine in cleaning_plan.routines.vec() {
-            let duty_to_user = self.assign_duties_to_users(cleaning_plan.participant_ids.clone(), routine.duties.clone()).await?;
+            let duty_to_user = self.assign_routine_duties_to_users(cleaning_plan.participant_ids.clone(), routine.duties.clone()).await?;
             for (assigned_duty, user_id) in duty_to_user {
                 let user_duty = Self::build_user_duty(user_id, assigned_duty, routine.clone());
-                created_duties_ids.push(self.user_duty_repository.create_user_duty(&user_duty).await?.id);
+                created_duties.push(self.user_duty_repository.create_user_duty(&user_duty).await?);
             }
         }
 
-        Ok(created_duties_ids)
+        Ok(created_duties)
     }
 
-    async fn assign_duties_to_users<'a>(&self, user_ids: Vec<String>, duties: Duties) -> Result<HashMap<Duty, String>, JsonProblem> {
+    async fn assign_routine_duties_to_users<'a>(&self, user_ids: Vec<String>, duties: Duties) -> Result<HashMap<Duty, String>, JsonProblem> {
         let mut duty_to_user_id: HashMap<Duty, String> = HashMap::new();
+        let mut assigned_user_ids = Vec::new();
 
-        for duty in duties.vec() {
-            let mut assigned_user_ids = Vec::new();
+        for duty in duties.sort_by_creation_time().vec() {
             let selected_user_id = self.select_user_for_duty(duty.id.clone(), &user_ids, &assigned_user_ids).await?;
             duty_to_user_id.insert(duty, selected_user_id.clone());
-            assigned_user_ids.push(selected_user_id)
+            assigned_user_ids.push(selected_user_id);
+            if assigned_user_ids.len() == user_ids.len() {
+                assigned_user_ids.clear()
+            }
         };
 
         Ok(duty_to_user_id)
     }
 
     async fn select_user_for_duty(&self, duty_id: String, user_ids: &Vec<String>, assigned_user_ids: &Vec<String>) -> Result<String, JsonProblem> {
-        debug!("Selecting user for duty'{}'", duty_id.clone());
+        debug!("Selecting user for duty '{}'", duty_id.clone());
         let mut oldest_timestamp = Utc::now();
         let mut selected_user_id: Option<String> = None;
 
         for user_id in user_ids {
-            debug!("Analysing user '{}'", user_id.clone());
+            trace!("Analysing user '{}'", user_id.clone());
             let timestamp = self.get_user_duty_completion_timestamp(duty_id.clone(), user_id.clone()).await?;
             if assigned_user_ids.contains(user_id) {
                 continue;
             }
+            trace!("User '{}' not in assigned users '{:?}'", user_id.clone(), assigned_user_ids);
             if let Some(timestamp) = timestamp {
                 if timestamp < oldest_timestamp {
                     oldest_timestamp = timestamp;
