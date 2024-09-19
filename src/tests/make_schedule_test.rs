@@ -96,43 +96,24 @@ mod make_schedule_test {
     #[tokio::test]
     async fn select_user_that_has_not_been_assigned_to_the_duty_the_longest() {
         let user_ids = mock_ids(3);
-        let user_1 = user_ids.get(0).unwrap();
-        let user_2 = user_ids.get(1).unwrap();
-        let user_3 = user_ids.get(2).unwrap();
         let template_ids = mock_ids(5);
-        let template_1_1 = template_ids.get(0).unwrap();
-        let template_1_2 = template_ids.get(1).unwrap();
-        let template_1_3 = template_ids.get(2).unwrap();
-        let template_2_1 = template_ids.get(3).unwrap();
-        let template_2_2 = template_ids.get(4).unwrap();
-        let (iter_1, iter_2, iter_3) = (Utc::now() - TimeDelta::days(21), Utc::now() - TimeDelta::days(14), Utc::now() - TimeDelta::days(7));
+        let iters = mock_iterations(3, TimeDelta::days(7));
 
         let cleaning_plan = mock_cleaning_plan(
             user_ids.clone(),
             vec![template_ids[..3].to_vec(), template_ids[3..].to_vec()],
         );
 
-        let existing_user_duties = vec![
-            mock_existing_user_duty(user_1, &template_1_1, &iter_1),
-            mock_existing_user_duty(user_2, &template_1_2, &iter_1),
-            mock_existing_user_duty(user_3, &template_1_3, &iter_1),
-            mock_existing_user_duty(user_1, &template_2_1, &iter_1),
-            mock_existing_user_duty(user_2, &template_2_2, &iter_1),
-            mock_existing_user_duty(user_1, &template_1_2, &iter_2),
-            mock_existing_user_duty(user_2, &template_1_3, &iter_2),
-            mock_existing_user_duty(user_3, &template_1_1, &iter_2),
-            mock_existing_user_duty(user_3, &template_2_1, &iter_2),
-            mock_existing_user_duty(user_1, &template_2_2, &iter_2),
-            mock_existing_user_duty(user_1, &template_1_3, &iter_3),
-            mock_existing_user_duty(user_2, &template_1_1, &iter_3),
-            mock_existing_user_duty(user_3, &template_1_2, &iter_3),
-            mock_existing_user_duty(user_2, &template_2_1, &iter_3),
-            mock_existing_user_duty(user_3, &template_2_2, &iter_3),
+        // Vec<Vec<(<user_index>, <template_index>)>>
+        let iterations = vec![
+            vec![(0, 0), (1, 1), (2, 2), (0, 3), (1, 4)], // Iteration 1
+            vec![(0, 1), (1, 2), (2, 0), (2, 3), (0, 4)], // Iteration 2
+            vec![(0, 2), (1, 0), (2, 1), (1, 3), (2, 4)], // Iteration 3
         ];
 
         let result = UserDutyService::new(
             cleaning_plan_repository(cleaning_plan),
-            user_duty_repository(Some(existing_user_duties)),
+            user_duty_repository(Some(mock_user_duties(iterations, &user_ids, &template_ids, &iters))),
         ).make_schedules().await;
         assert!(result.is_ok());
 
@@ -143,26 +124,35 @@ mod make_schedule_test {
             .map(|d| (d.template_id.clone(), d.user_id.clone()))
             .collect::<HashMap<String, String>>();
 
-        assert_eq!(template_id_to_user_id.get(template_1_1).unwrap(), user_1);
-        assert_eq!(template_id_to_user_id.get(template_1_2).unwrap(), user_2);
-        assert_eq!(template_id_to_user_id.get(template_1_3).unwrap(), user_3);
-        assert_eq!(template_id_to_user_id.get(template_2_1).unwrap(), user_1);
-        assert_eq!(template_id_to_user_id.get(template_2_2).unwrap(), user_2);
+        assert_eq!(template_id_to_user_id[&template_ids[0]], user_ids[0]);
+        assert_eq!(template_id_to_user_id[&template_ids[1]], user_ids[1]);
+        assert_eq!(template_id_to_user_id[&template_ids[2]], user_ids[2]);
+        assert_eq!(template_id_to_user_id[&template_ids[3]], user_ids[0]);
+        assert_eq!(template_id_to_user_id[&template_ids[4]], user_ids[1]);
     }
 
-    fn mock_existing_user_duty(user_id: &String, template_id: &String, timestamp: &DateTime<Utc>) -> UserDuty {
-        UserDuty::new(
-            ObjectId::new().to_hex(),
-            user_id.clone(),
-            template_id.clone(),
-            "".to_string(),
-            UserTasks::new(vec![]),
-            timestamp.clone(),
-            timestamp.clone() + TimeDelta::days(1),
-            DutyFulfilment::new(true, true),
-            UserPenalty::new("".to_string(), "".to_string(), true),
-        )
+    fn mock_user_duties(
+        indices: Vec<Vec<(usize, usize)>>,
+        users: &[String],
+        templates: &[String],
+        timestamps: &[DateTime<Utc>]
+    ) -> Vec<UserDuty> {
+        let mut user_duties = Vec::new();
+
+        for (iter_index, user_to_template) in indices.iter().enumerate() {
+            for &(user_index, template_index) in user_to_template {
+                let duty = mock_existing_user_duty(
+                    &users[user_index],
+                    &templates[template_index],
+                    &timestamps[iter_index],
+                );
+                user_duties.push(duty);
+            }
+        }
+
+        user_duties
     }
+
 
     fn count_duties_assigned_to_users(duties: Vec<UserDuty>) -> HashMap<String, i32> {
         let mut user_to_duty_count: HashMap<String, i32> = HashMap::new();
@@ -191,6 +181,20 @@ mod make_schedule_test {
             user_duty_repository.set_user_duties(content);
         }
         Arc::new(user_duty_repository)
+    }
+
+    fn mock_existing_user_duty(user_id: &String, template_id: &String, timestamp: &DateTime<Utc>) -> UserDuty {
+        UserDuty::new(
+            ObjectId::new().to_hex(),
+            user_id.clone(),
+            template_id.clone(),
+            "".to_string(),
+            UserTasks::new(vec![]),
+            timestamp.clone(),
+            timestamp.clone() + TimeDelta::days(1),
+            DutyFulfilment::new(true, true),
+            UserPenalty::new("".to_string(), "".to_string(), true),
+        )
     }
 
     fn mock_cleaning_plan(user_ids: Vec<String>, duties_in_routine: Vec<Vec<String>>) -> CleaningPlan {
@@ -244,5 +248,13 @@ mod make_schedule_test {
         }
 
         ids
+    }
+
+    fn mock_iterations(iterations_count: i32, time_delta: TimeDelta) -> Vec<DateTime<Utc>> {
+        let mut timestamps = Vec::new();
+        for i in (1..=iterations_count).rev() {
+            timestamps.push(Utc::now() - (time_delta * i));
+        }
+        timestamps
     }
 }
